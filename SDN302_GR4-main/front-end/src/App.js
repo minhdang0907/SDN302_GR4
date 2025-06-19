@@ -6,10 +6,8 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProductList from "./components/ProductList";
 import ProductDetail from "./components/ProductDetail";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer } from "react-toastify";
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -18,11 +16,9 @@ function App() {
         <Routes>
           <Route path="/" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetail />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          
         </Routes>
         <Footer />
-        <ToastContainer />
       </>
     </BrowserRouter>
   );
