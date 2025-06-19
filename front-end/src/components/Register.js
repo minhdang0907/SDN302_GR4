@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { HttpStatusCode } from "axios";
 import { useState } from "react";
 import { Image } from "react-bootstrap";
 import { toast } from "react-toastify";
@@ -22,18 +22,51 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (hasEmptyField(formData)) {
+      toast.error("Vui lòng điền đầy đủ tất cả các trường.");
+      return;
+    }
     if (formData.password !== formData.rePassword) {
       toast.error("Password với RePassword không trùng nhau!");
       return;
     }
-    const res = await axios.post("http://localhost:9999/register", {
-      fullName: formData.fullName,
-      email: formData.email,
-      phone: formData.phone,
-      password: formData.password,
-    });
+    if (!isValidEmail(formData.email)) {
+      toast.error("Sai format email!!!");
+      return;
+    }
+    if (!isValidPhone(formData.phone)) {
+      toast.error("Sai format số điện thoại!!!");
+      return;
+    }
 
-    console.log("Submitted data:", formData);
+    try {
+      const res = await axios.post("http://localhost:9999/users/register", {
+        full_name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+      });
+      console.log(res);
+
+      toast.success(res.data.message);
+    } catch (res) {
+      if (res.status === 400) {
+        toast.error(res.response.data.error);
+        return;
+      }
+    }
+  };
+  const isValidEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+  const isValidPhone = (phone) => {
+    const regex = /^[0-9]{10}$/;
+    return regex.test(phone);
+  };
+  const hasEmptyField = (formData) => {
+    return Object.values(formData).some((value) => value.trim() === "");
   };
 
   return (
