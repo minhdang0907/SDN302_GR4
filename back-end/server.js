@@ -1,16 +1,30 @@
-const express=require('express');
-const connectDB=require('./config/db');
-const router=require('./src/routes/index.js');
+const express = require('express');
+const connectDB = require('./config/db');
+const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const app=express();
+
+const app = express();
+const PORT = process.env.PORT || 9999;
+
+// Kết nối MongoDB
 connectDB();
-app.use(express.json()); 
+
+// Middleware
+app.use(express.json());
+app.use(cookieParser());
 app.use(cors({
-    origin: "http://localhost:3000",
-    credentials: true 
+    origin: "http://localhost:3000", // hoặc "*" nếu test nhanh
+    credentials: true
 }));
-app.use("/",router);
-const PORT=process.env.PORT||9999
-app.listen(PORT,()=>{
-    console.log(`localhost://${PORT}`);
+
+// Route
+const userRoutes = require("./src/routes/user.route"); // 💡 thêm
+const indexRoutes = require('./src/routes/index.js');
+
+app.use("/api/users", userRoutes); // 💡 login, register, logout
+app.use("/", indexRoutes);          // 💡 các route khác: /products, /categories
+
+// Start server
+app.listen(PORT, () => {
+    console.log(`✅ Server is running at http://localhost:${PORT}`);
 });
