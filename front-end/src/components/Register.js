@@ -1,7 +1,8 @@
-import axios, { HttpStatusCode } from "axios";
+import axios from "axios";
 import { useState } from "react";
 import { Image } from "react-bootstrap";
 import { toast } from "react-toastify";
+import validator from "validator";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -31,11 +32,11 @@ const Register = () => {
       toast.error("Password với RePassword không trùng nhau!");
       return;
     }
-    if (!isValidEmail(formData.email)) {
+    if (!validator.isEmail(formData.email)) {
       toast.error("Sai format email!!!");
       return;
     }
-    if (!isValidPhone(formData.phone)) {
+    if (!validator.isMobilePhone(formData.phone, "vi-VN")) {
       toast.error("Sai format số điện thoại!!!");
       return;
     }
@@ -57,14 +58,17 @@ const Register = () => {
       }
     }
   };
-  const isValidEmail = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  };
-  const isValidPhone = (phone) => {
-    const regex = /^[0-9]{10}$/;
-    return regex.test(phone);
-  };
+
+  // const isValidEmail = (email) => {
+  //   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  //   return regex.test(email);
+  // };
+
+  // const isValidPhone = (phone) => {
+  //   const regex = /^[0-9]{10}$/;
+  //   return regex.test(phone);
+  // };
+
   const hasEmptyField = (formData) => {
     return Object.values(formData).some((value) => value.trim() === "");
   };
