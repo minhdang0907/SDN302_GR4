@@ -1,0 +1,11 @@
+[
+  {
+    "_id": { "$oid": "60f71b8c2f8fb814b56fa701" },
+    "code": "HOAXINH20",
+    "description": "Giảm 20% cho đơn hàng từ 500K",
+    "discount_percent": 20,
+    "valid_from": { "$date": "2025-06-01T00:00:00Z" },
+    "valid_to": { "$date": "2025-07-01T00:00:00Z" },
+    "is_active": true
+  }
+]

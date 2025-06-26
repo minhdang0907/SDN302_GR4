@@ -1,0 +1,22 @@
+[
+  {
+    "_id": { "$oid": "60f71b8c2f8fb814b56fa301" },
+    "full_name": "Nguyễn Văn A",
+    "email": "nguyenvana@example.com",
+    "phone": "0912345678",
+    "password": "123456",
+    "role": "customer",
+    "created_at": { "$date": "2025-05-15T10:00:00Z" },
+    "updated_at": { "$date": "2025-05-15T10:00:00Z" }
+  },
+  {
+    "_id": { "$oid": "60f71b8c2f8fb814b56fa302" },
+    "full_name": "Admin",
+    "email": "admin@gmail.com",
+    "phone": "0912343678",
+    "password": "admin123",
+    "role": "admin",
+    "created_at": { "$date": "2025-05-15T10:00:00Z" },
+    "updated_at": { "$date": "2025-05-15T10:00:00Z" }
+  }
+]

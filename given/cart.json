@@ -1,0 +1,15 @@
+[
+  {
+    "_id": { "$oid": "60f71b8c2f8fb814b56fa901" },
+    "user_id": { "$oid": "60f71b8c2f8fb814b56fa301" },
+    "items": [
+      {
+        "product_id": { "$oid": "60f71b8c2f8fb814b56fa1c1" },
+        "quantity": 2
+      }
+    ],
+    "created_at": { "$date": "2025-06-11T14:00:00Z" },
+    "updated_at": { "$date": "2025-06-11T14:10:00Z" }
+    
+  }
+]
