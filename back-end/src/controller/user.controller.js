@@ -1,4 +1,5 @@
-const User = require("../models/user");
+const bcrypt = require('bcrypt');
+const User = require('../models/user');
 
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -25,10 +26,11 @@ exports.register = async (req, res) => {
             return res.status(400).json({ error: "Số điện thoại đã tồn tại" });
         }
 
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 là số vòng lặp salt
         const otp = generateOTP();
         const otp_expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 phút
 
-        const user = new User({ full_name, email, phone, password, otp, otp_expiry });
+        const user = new User({ full_name, email, phone, password: hashedPassword, otp, otp_expiry });
         await user.save();
 
         res.status(201).json({
