@@ -8,7 +8,10 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
   created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now }
+  updated_at: { type: Date, default: Date.now },
+  otp: { type: String }, // Thêm trường OTP
+  otp_expiry: { type: Date }, // Thời gian hết hạn OTP
+  is_verified: { type: Boolean, default: false } // Đã xác thực chưa
 });
 
 const User = mongoose.model("User", UserSchema);
