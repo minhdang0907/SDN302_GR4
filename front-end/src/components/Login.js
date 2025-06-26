@@ -2,16 +2,31 @@ import React, { useState } from "react";
 import "../assets/login.css";
 import { Image } from "react-bootstrap";
 import axios from "axios";
+import { toast } from "react-toastify";
+import validator from "validator";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async () => {
-    const res = await axios.post("http://localhost:9999/login", {
-      email,
-      password,
-    });
+    if (!validator.isEmail(email)) {
+      toast.error("Sai format email!!!");
+      return;
+    }
+    try {
+      const res = await axios.post("http://localhost:9999/login", {
+        email,
+        password,
+      });
+
+      toast.success(res.data.message);
+    } catch (res) {
+      if (res.status === 400) {
+        toast.error(res.response.data.error);
+        return;
+      }
+    }
   };
 
   return (
