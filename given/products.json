@@ -1,0 +1,62 @@
+[
+  {
+    "_id": { "$oid": "60f71b8c2f8fb814b56fa1c1" },
+    "name": "Hoa hồng đỏ",
+    "description": "Hoa hồng đỏ tượng trưng cho tình yêu nồng nàn và lãng mạn.",
+    "price": 250000,
+    "categories":{ "$oid": "60f71b8c2f8fb814b56fa2a1" },
+    "images": [
+      "https://cdn.litiflorist.com/upload/1708478181452.png",
+      "https://static.tomimarkets.net/up-news/images/Tomimarkets_285740.png"
+    ],
+    "stock": 10,
+    "is_available": true,
+    "created_at": { "$date": "2025-06-01T09:00:00Z" },
+    "updated_at": { "$date": "2025-06-01T09:00:00Z" }
+  },
+  {
+    "_id": { "$oid": "60f71b8c2f8fb814b56fa1c2" },
+    "name": "Hoa hồng đỏ",
+    "description": "Hoa hồng đỏ tượng trưng cho tình yêu nồng nàn và lãng mạn.",
+    "price": 250000,
+    "categories":{ "$oid": "60f71b8c2f8fb814b56fa2a2" },
+    "images": [
+      "https://hoayeuthuong.com/hinh-hoa-tuoi/hoa-tuoi-hop/3195_elegant-flower-box.jpg",
+      "https://hoayeuthuong.com/hinh-hoa-tuoi/hoa-tuoi-hop/3318_pinky-flower-box.jpg"
+    ],
+    "stock": 10,
+    "is_available": true,
+    "created_at": { "$date": "2025-06-01T09:00:00Z" },
+    "updated_at": { "$date": "2025-06-01T09:00:00Z" }
+  },
+  {
+    "_id": { "$oid": "60f71b8c2f8fb814b56fa1c3" },
+    "name": "Hoa tulip",
+    "description": "Hoa tulip nhập Hà Lan.",
+    "price": 250000,
+    "categories":{ "$oid": "60f71b8c2f8fb814b56fa2a2" },
+    "images": [
+      "https://product.hstatic.net/200000015764/product/z5198597526942_4779bcfbb7d21f59d3c173b0cd2ee194_41f9bac657254b8cb5ede58d90442064_master.jpg",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpgX4qJG4P8DPmDx0p47HQkjgI8PfJf6Yp5nzL8xY3RsPpQlJ2uYFUo6jG6IBGP5cT-uk&usqp=CAU"
+    ],
+    "stock": 10,
+    "is_available": true,
+    "created_at": { "$date": "2025-06-01T09:00:00Z" },
+    "updated_at": { "$date": "2025-06-01T09:00:00Z" }
+  },
+  {
+    "_id": { "$oid": "60f71b8c2f8fb814b56fa1c4" },
+    "name": "Lẵng hoa trang trí",
+    "description": "Hoa tượng trưng cho tình yêu và sự lãng mạn.",
+    "price": 250000,
+    "categories":{ "$oid": "60f71b8c2f8fb814b56fa2a2" },
+    "images": [
+      "https://bonn.vn/wp-content/uploads/2020/03/lang-hoa-tuoi-cao-cap.jpg",
+      "https://hoatuoidatviet.vn/upload/images/lang-hoa-tuoi-dep-nong-nan.jpg"
+    ],
+    "stock": 10,
+    "is_available": true,
+    "created_at": { "$date": "2025-06-01T09:00:00Z" },
+    "updated_at": { "$date": "2025-06-01T09:00:00Z" }
+  }
+]
