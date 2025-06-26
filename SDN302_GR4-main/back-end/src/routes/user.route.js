@@ -1,13 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const userController = require("../controller/user.controller");
+const userController = require("../controllers/user.controller");
 const { verifyToken } = require("../middleware/auth.middleware");
 
 router.post("/register", userController.register);
 router.post("/login", userController.login);
 router.post("/logout", userController.logout);
-
 router.get("/profile", verifyToken, (req, res) => {
   res.json({ message: "Bạn đã đăng nhập", user: req.user });
 });

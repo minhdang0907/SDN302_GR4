@@ -1,25 +1,18 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 
-const SECRET_KEY = "kkk"; // Có thể đưa vào .env nếu cần
+const SECRET_KEY = process.env.SECRET_KEY;
 
-// Đăng ký (không mã hóa)
+// Đăng ký
 exports.register = async (req, res) => {
   try {
     const { full_name, email, phone, password } = req.body;
 
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    if (existingUser)
       return res.status(400).json({ message: "Email đã tồn tại" });
-    }
 
-    const newUser = new User({
-      full_name,
-      email,
-      phone,
-      password, // không mã hóa
-    });
-
+    const newUser = new User({ full_name, email, phone, password });
     await newUser.save();
 
     const token = jwt.sign(
@@ -28,32 +21,22 @@ exports.register = async (req, res) => {
       { expiresIn: "2h" }
     );
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: 2 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, { httpOnly: true, maxAge: 2 * 60 * 60 * 1000 });
 
-    res.status(201).json({ message: "Đăng ký thành công" });
+    res.status(201).json({ message: "Đăng ký thành công", token });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
-// Đăng xuất (xóa cookie token)
-exports.logout = (req, res) => {
-  res.clearCookie("token"); // Xóa cookie tên 'token'
-  res.status(200).json({ message: "Đăng xuất thành công" });
-};
-// Đăng nhập (và trả về token dưới message)
+
+// Đăng nhập
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ message: "Email không đúng" });
-
-    if (password !== user.password)
-      return res.status(400).json({ message: "Mật khẩu không đúng" });
+    if (!user || user.password !== password)
+      return res.status(400).json({ message: "Email hoặc mật khẩu không đúng" });
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -61,16 +44,16 @@ exports.login = async (req, res) => {
       { expiresIn: "2h" }
     );
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: 2 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, { httpOnly: true, maxAge: 2 * 60 * 60 * 1000 });
 
-    res.status(200).json({
-      message: "Đăng nhập thành công",
-      token: token, // ✅ hiện token dưới message
-    });
+    res.status(200).json({ message: "Đăng nhập thành công", token });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
+};
+
+// Đăng xuất
+exports.logout = (req, res) => {
+  res.clearCookie("token");
+  res.status(200).json({ message: "Đăng xuất thành công" });
 };
