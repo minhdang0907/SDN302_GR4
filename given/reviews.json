@@ -1,0 +1,10 @@
+[
+  {
+    "_id": { "$oid": "60f71b8c2f8fb814b56fa501" },
+    "user_id": { "$oid": "60f71b8c2f8fb814b56fa301" },
+    "product_id": { "$oid": "60f71b8c2f8fb814b56fa1c1" },
+    "rating": 5,
+    "comment": "Hoa rất đẹp, giao đúng giờ. Rất hài lòng!",
+    "created_at": { "$date": "2025-06-11T09:00:00Z" }
+  }
+]
