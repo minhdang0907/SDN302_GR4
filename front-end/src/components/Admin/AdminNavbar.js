@@ -13,7 +13,7 @@ const AdminNavbar = () => {
           <Nav className="me-auto">
             <Nav.Link href="#users">Users</Nav.Link>
             <Nav.Link href="#products">Products</Nav.Link>
-            <Nav.Link href="#orders">Orders</Nav.Link>
+            <Nav.Link href="/admin/orders">Order</Nav.Link>
             <Nav.Link href="#categories">Categories</Nav.Link>
             <Nav.Link href="#discounts">Discounts</Nav.Link>
             <Nav.Link href="#reviews">Reviews</Nav.Link>
