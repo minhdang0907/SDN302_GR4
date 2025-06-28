@@ -13,6 +13,7 @@ import { ToastContainer } from "react-toastify";
 import Admin from "./pages/Admin";
 import UserLayout from "./components/UserLayout";
 import AdminLayout from "./components/Admin/AdminLayout";
+import ManageOrder from "./components/Admin/ManageOrder";
 function App() {
   return (
     <BrowserRouter>
@@ -26,6 +27,7 @@ function App() {
           </Route>
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/orders" element={<ManageOrder />} />
           </Route>
         </Routes>
         <ToastContainer />
