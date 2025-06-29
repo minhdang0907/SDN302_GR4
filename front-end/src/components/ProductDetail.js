@@ -56,16 +56,26 @@ const ProductDetail = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
-    try {
-      await axios.post("http://localhost:9999/cart", {
-        user_id: "USER_ID_HERE", // Thay bằng ID người dùng thực tế
-        items: [{ product_id: id, quantity }]
-      });
-      alert("Đã thêm vào giỏ hàng!");
-    } catch {
-      alert("Thêm vào giỏ hàng thất bại.");
-    }
-  };
+  const userId = localStorage.getItem("user_id");
+
+  if (!userId) {
+    alert("Vui lòng đăng nhập để thêm vào giỏ hàng.");
+    return;
+  }
+
+  try {
+    await axios.post("http://localhost:9999/carts/add", {
+      user_id: userId,
+      product_id: id,
+      quantity,
+    });
+
+    alert("Đã thêm vào giỏ hàng!");
+  } catch {
+    alert("Thêm vào giỏ hàng thất bại.");
+  }
+};
+
 
   if (loading) {
     return (

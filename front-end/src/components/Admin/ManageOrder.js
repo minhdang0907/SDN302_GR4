@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  Container,
-  Table,
-  Spinner,
-  Alert,
-  Badge
-} from "react-bootstrap";
+import { Container, Table, Spinner, Alert } from "react-bootstrap";
 
 const ManageOrder = () => {
   const [orders, setOrders] = useState([]);
@@ -29,16 +23,6 @@ const ManageOrder = () => {
     fetchOrders();
   }, []);
 
-  const renderStatus = (status) => {
-    const variantMap = {
-      pending: "warning",
-      shipped: "info",
-      delivered: "success",
-      cancelled: "danger"
-    };
-    return <Badge bg={variantMap[status] || "secondary"}>{status}</Badge>;
-  };
-
   if (loading) {
     return (
       <div className="text-center py-5">
@@ -50,6 +34,25 @@ const ManageOrder = () => {
   if (error) {
     return <Alert variant="danger">{error}</Alert>;
   }
+  const updateStatus = async (orderId, newStatus) => {
+    try {
+      await axios.put(
+        `http://localhost:9999/orders/${orderId}/status`,
+        {
+          status: newStatus,
+        }
+      );
+
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi cập nhật trạng thái đơn hàng.");
+    }
+  };
 
   return (
     <Container className="py-4">
@@ -62,10 +65,12 @@ const ManageOrder = () => {
             <tr>
               <th>#</th>
               <th>Khách hàng</th>
+              <th>SDT</th>
               <th>Email</th>
               <th>Sản phẩm</th>
               <th>Tổng tiền</th>
               <th>Trạng thái</th>
+              <th>Phương thức thanh toán</th>
               <th>Ngày đặt</th>
             </tr>
           </thead>
@@ -74,6 +79,7 @@ const ManageOrder = () => {
               <tr key={order._id}>
                 <td>{index + 1}</td>
                 <td>{order.user_id?.full_name || "Ẩn danh"}</td>
+                <td>{order.user_id?.phone || "-"}</td>
                 <td>{order.user_id?.email || "-"}</td>
                 <td>
                   {order.items.map((item, idx) => (
@@ -83,8 +89,22 @@ const ManageOrder = () => {
                   ))}
                 </td>
                 <td>{order.total_amount.toLocaleString("vi-VN")}₫</td>
-                <td>{renderStatus(order.status)}</td>
-                <td>{new Date(order.created_at).toLocaleDateString("vi-VN")}</td>
+                <td>
+                  <select
+                    className="form-select"
+                    value={order.status}
+                    onChange={(e) => updateStatus(order._id, e.target.value)}
+                  >
+                    <option value="pending">Chờ xử lý</option>
+                    <option value="shipped">Đã gửi hàng</option>
+                    <option value="delivered">Đã giao</option>
+                    <option value="cancelled">Đã hủy</option>
+                  </select>
+                </td>
+                <td>{order.payment_method}</td>
+                <td>
+                  {new Date(order.created_at).toLocaleDateString("vi-VN")}
+                </td>
               </tr>
             ))}
           </tbody>
