@@ -24,3 +24,46 @@ exports.applyDiscount = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
+
+// Thêm
+exports.createDiscount = async (req, res) => {
+  try {
+    const discount = new Discount(req.body);
+    await discount.save();
+    res.status(201).json(discount);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Sửa
+exports.updateDiscount = async (req, res) => {
+  try {
+    const discount = await Discount.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!discount) return res.status(404).json({ error: "Không tìm thấy mã giảm giá" });
+    res.json(discount);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Xoá
+exports.deleteDiscount = async (req, res) => {
+  try {
+    const result = await Discount.findByIdAndDelete(req.params.id);
+    if (!result) return res.status(404).json({ error: "Không tìm thấy mã giảm giá" });
+    res.json({ message: "Đã xoá thành công" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Lấy tất cả
+exports.getAllDiscounts = async (req, res) => {
+  try {
+    const list = await Discount.find().sort({ valid_to: -1 });
+    res.json(list);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

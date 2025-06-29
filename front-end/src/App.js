@@ -1,6 +1,4 @@
 import "./App.css";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -14,6 +12,7 @@ import Admin from "./pages/Admin";
 import UserLayout from "./components/UserLayout";
 import AdminLayout from "./components/Admin/AdminLayout";
 import ManageOrder from "./components/Admin/ManageOrder";
+import ManageDiscount from "./components/Admin/ManageDiscount";
 import Cart from "./components/Cart";
 function App() {
   return (
@@ -30,6 +29,7 @@ function App() {
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/orders" element={<ManageOrder />} />
+            <Route path="/admin/discounts" element={<ManageDiscount />} />
           </Route>
         </Routes>
         <ToastContainer />
