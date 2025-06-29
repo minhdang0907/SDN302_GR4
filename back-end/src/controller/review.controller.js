@@ -13,7 +13,7 @@ const getReviewByProductId = async (req, res) => {
     const cleanProductId = productId.trim();
 
     const reviews = await Review.find({ product_id: cleanProductId })
-      .populate("user_id", "name email")
+      .populate("user_id", )
       .sort({ created_at: -1 });
 
     if (!reviews.length) {

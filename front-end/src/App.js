@@ -14,6 +14,7 @@ import Admin from "./pages/Admin";
 import UserLayout from "./components/UserLayout";
 import AdminLayout from "./components/Admin/AdminLayout";
 import ManageOrder from "./components/Admin/ManageOrder";
+import Cart from "./components/Cart";
 function App() {
   return (
     <BrowserRouter>
@@ -24,6 +25,7 @@ function App() {
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/cart" element={<Cart />} />
           </Route>
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<Admin />} />
