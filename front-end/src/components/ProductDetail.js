@@ -16,30 +16,49 @@ import {
 const ProductDetail = () => {
   const { id } = useParams();
 
-  const [product, setProduct]     = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState("");
-  const [quantity, setQuantity]   = useState(1);
+  const [product, setProduct] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  const averageRating = reviews.length
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : null;
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProductAndReviews = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:9999/products/${id}`);
-        setProduct(res.data);
+
+        // Lấy sản phẩm
+        const productRes = await axios.get(`http://localhost:9999/products/${id}`);
+        setProduct(productRes.data);
       } catch (err) {
         setError("Không thể tải thông tin sản phẩm.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Lấy đánh giá
+        const reviewRes = await axios.get(`http://localhost:9999/reviews/product/${id}`);
+        setReviews(reviewRes.data);
+      } catch (err) {
+        console.warn("Không thể tải đánh giá:", err.message);
+        setReviews([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchProduct();
+
+    fetchProductAndReviews();
   }, [id]);
 
   const handleAddToCart = async () => {
     try {
       await axios.post("http://localhost:9999/cart", {
-        user_id: "USER_ID_HERE", // thay USER_ID_HERE bằng ID thực tế
+        user_id: "USER_ID_HERE", // Thay bằng ID người dùng thực tế
         items: [{ product_id: id, quantity }]
       });
       alert("Đã thêm vào giỏ hàng!");
@@ -55,12 +74,12 @@ const ProductDetail = () => {
       </div>
     );
   }
+
   if (error) {
     return <Alert variant="danger">{error}</Alert>;
   }
-  if (!product) {
-    return null;
-  }
+
+  if (!product) return null;
 
   return (
     <Container className="py-5">
@@ -75,7 +94,7 @@ const ProductDetail = () => {
                     className="d-block w-100"
                     src={url}
                     alt={`${product.name} ${idx + 1}`}
-                    style={{  objectFit: "cover" }}
+                    style={{ objectFit: "cover" }}
                   />
                 </Carousel.Item>
               ))}
@@ -92,6 +111,20 @@ const ProductDetail = () => {
         {/* Thông tin sản phẩm */}
         <Col md={6}>
           <h3 className="fw-bold">{product.name}</h3>
+
+          {/* ⭐ Đánh giá trung bình */}
+          {averageRating ? (
+            <div className="mb-2">
+              <span className="text-warning me-2">
+                {"★".repeat(Math.round(averageRating))}
+                {"☆".repeat(5 - Math.round(averageRating))}
+              </span>
+              <small>({averageRating} / 5 từ {reviews.length} đánh giá)</small>
+            </div>
+          ) : (
+            <small className="text-muted d-block mb-2">Chưa có đánh giá</small>
+          )}
+
           <h4 className="text-danger mb-3">
             {product.price.toLocaleString("vi-VN")}₫
           </h4>
@@ -115,7 +148,9 @@ const ProductDetail = () => {
                 min="1"
                 max={product.stock}
                 value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, Math.min(product.stock, +e.target.value)))}
+                onChange={(e) =>
+                  setQuantity(Math.max(1, Math.min(product.stock, +e.target.value)))
+                }
               />
             </Col>
           </Form.Group>
@@ -129,6 +164,30 @@ const ProductDetail = () => {
           </Button>
         </Col>
       </Row>
+
+      {/* Đánh giá chi tiết */}
+      <hr className="my-5" />
+      <h4>Đánh giá sản phẩm</h4>
+
+      {reviews.length === 0 ? (
+        <p className="text-muted">Chưa có đánh giá nào.</p>
+      ) : (
+        reviews.map((review, index) => (
+          <div key={index} className="mb-4 border-bottom pb-3">
+            <div className="d-flex justify-content-between align-items-center mb-1">
+              <strong>{review.user_id?.full_name || "Người dùng ẩn danh"}</strong>
+              <small className="text-muted">
+                {new Date(review.created_at).toLocaleDateString("vi-VN")}
+              </small>
+            </div>
+            <div className="text-warning mb-2">
+              {"★".repeat(review.rating)}
+              {"☆".repeat(5 - review.rating)}
+            </div>
+            <p>{review.comment || <em className="text-muted">Không có nội dung.</em>}</p>
+          </div>
+        ))
+      )}
     </Container>
   );
 };

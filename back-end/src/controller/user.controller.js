@@ -1,5 +1,4 @@
-const bcrypt = require("bcrypt");
-const User = require('../models/user');
+const User = require("../models/user");
 
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -26,13 +25,10 @@ exports.register = async (req, res) => {
             return res.status(400).json({ error: "Số điện thoại đã tồn tại" });
         }
 
-        // Mã hóa mật khẩu
-        const hashedPassword = await bcrypt.hash(password, 10);
-
         const otp = generateOTP();
         const otp_expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 phút
 
-        const user = new User({ full_name, email, phone, password: hashedPassword, otp, otp_expiry });
+        const user = new User({ full_name, email, phone, password, otp, otp_expiry });
         await user.save();
 
         res.status(201).json({
@@ -60,45 +56,6 @@ exports.verifyOTP = async (req, res) => {
         await user.save();
 
         res.json({ message: "Xác thực thành công!" });
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-};
-
-exports.requestResetPassword = async (req, res) => {
-    try {
-        const { email } = req.body;
-        const user = await User.findOne({ email });
-        if (!user) return res.status(404).json({ error: "Không tìm thấy user" });
-
-        const otp = generateOTP();
-        const otp_expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 phút
-        user.otp = otp;
-        user.otp_expiry = otp_expiry;
-        await user.save();
-
-        // TODO: Gửi OTP qua email, ở đây trả về response để test
-        res.json({ message: "OTP đã được gửi!", otp });
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-};
-
-exports.resetPassword = async (req, res) => {
-    try {
-        const { email, otp, new_password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user) return res.status(404).json({ error: "Không tìm thấy user" });
-        if (user.otp !== otp) return res.status(400).json({ error: "OTP không đúng" });
-        if (user.otp_expiry < new Date()) return res.status(400).json({ error: "OTP đã hết hạn" });
-
-        // Hash mật khẩu mới
-        user.password = await bcrypt.hash(new_password, 10);
-        user.otp = undefined;
-        user.otp_expiry = undefined;
-        await user.save();
-
-        res.json({ message: "Đặt lại mật khẩu thành công!" });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }

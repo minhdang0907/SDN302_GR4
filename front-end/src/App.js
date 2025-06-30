@@ -10,18 +10,24 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+import Admin from "./pages/Admin";
+import UserLayout from "./components/UserLayout";
+import AdminLayout from "./components/Admin/AdminLayout";
 function App() {
   return (
     <BrowserRouter>
       <>
-        <Header />
         <Routes>
-          <Route path="/" element={<ProductList />} />
-          <Route path="/products/:id" element={<ProductDetail />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route element={<UserLayout />}>
+            <Route path="/" element={<ProductList />} />
+            <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Route>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<Admin />} />
+          </Route>
         </Routes>
-        <Footer />
         <ToastContainer />
       </>
     </BrowserRouter>
