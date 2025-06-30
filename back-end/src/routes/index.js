@@ -7,13 +7,10 @@ const userRouter = require("./user.route");
 
 const reviewRoutes = require("./review.route");
 
-
-
 router.use("/products", productRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/users", userRouter);
 
 router.use("/reviews", reviewRoutes);
-
 
 module.exports = router;
