@@ -24,8 +24,8 @@ const ProductDetail = () => {
 
   const averageRating = reviews.length
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(
-        1
-      )
+      1
+    )
     : null;
 
   useEffect(() => {

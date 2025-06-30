@@ -12,6 +12,7 @@ const discountRoutes = require("./discount.route");
 const paymentRoutes = require("./payment.route");
 
 
+
 router.use("/products", productRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/users", userRouter);

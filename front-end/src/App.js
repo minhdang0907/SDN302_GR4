@@ -37,6 +37,9 @@ function App() {
             <Route path="/admin/orders" element={<ManageOrder />} />
             <Route path="/admin/discounts" element={<ManageDiscount />} />
           </Route>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<Admin />} />
+          </Route>
         </Routes>
         <ToastContainer />
       </>

@@ -1,10 +1,10 @@
 
 const mongoose = require("mongoose");
-const Review = require("../models/review.js"); 
+const Review = require("../models/review.js");
 require("../models/user");
 const getReviewByProductId = async (req, res) => {
   try {
-    const productId = req.params.id; 
+    const productId = req.params.id;
 
     if (!productId || !mongoose.Types.ObjectId.isValid(productId.trim())) {
       return res.status(400).json({ message: "ID sản phẩm không hợp lệ hoặc bị thiếu." });
@@ -13,7 +13,8 @@ const getReviewByProductId = async (req, res) => {
     const cleanProductId = productId.trim();
 
     const reviews = await Review.find({ product_id: cleanProductId })
-      .populate("user_id", )
+      .populate("user_id",)
+      .populate("user_id", "name email")
       .sort({ created_at: -1 });
 
     if (!reviews.length) {
