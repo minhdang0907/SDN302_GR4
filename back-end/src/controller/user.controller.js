@@ -1,7 +1,6 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const nodemailer = require("nodemailer");
-const bcrypt = require("bcrypt");
 
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
