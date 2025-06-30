@@ -11,6 +11,7 @@ const cartRoutes = require("./cart.route");
 const discountRoutes = require("./discount.route");
 const paymentRoutes = require("./payment.route");
 
+
 router.use("/products", productRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/users", userRouter);
@@ -20,5 +21,9 @@ router.use("/orders", orderRoutes);
 router.use("/carts", cartRoutes);
 
 router.use("/discounts", discountRoutes);
+
 router.use("/payment", paymentRoutes);
 module.exports = router;
+module.exports = router;
+
+
