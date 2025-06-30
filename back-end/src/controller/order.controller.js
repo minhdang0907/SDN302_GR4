@@ -5,9 +5,9 @@ const Cart = require("../models/cart.js");
 const getAllOrder = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("user_id") 
-      .populate("items.product_id", "name price") 
-      .sort({ created_at: -1 }); 
+      .populate("user_id")
+      .populate("items.product_id", "name price")
+      .sort({ created_at: -1 });
 
     res.status(200).json(orders);
   } catch (error) {
@@ -100,10 +100,23 @@ const createOrder = async (req, res) => {
   }
 };
 
-      
-    
+const getOrdersByUser = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const orders = await Order.find({ user_id })
+      .populate("items.product_id", "name price")
+      .sort({ created_at: -1 });
+    res.status(200).json(orders);
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi máy chủ." });
+  }
+};
+
+
+
 module.exports = {
   getAllOrder,
   updateOrderStatus,
-  createOrder 
+  createOrder,
+  getOrdersByUser
 };

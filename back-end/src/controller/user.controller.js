@@ -201,3 +201,33 @@ exports.getUserById = async (req, res) => {
         res.status(500).json({ message: "Lỗi server" });
     }
 };
+
+// Thêm địa chỉ mới
+exports.addAddress = async (req, res) => {
+    try {
+        const { userId, address, is_default } = req.body;
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
+
+        if (is_default) {
+            user.addresses.forEach(addr => addr.is_default = false);
+        }
+        user.addresses.push({ address, is_default: !!is_default });
+        await user.save();
+        res.json({ message: "Đã thêm địa chỉ", addresses: user.addresses });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
+// Lấy danh sách địa chỉ
+exports.getAddresses = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId).select("addresses");
+        if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
+        res.json(user.addresses);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};

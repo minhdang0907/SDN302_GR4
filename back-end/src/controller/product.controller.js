@@ -3,7 +3,7 @@ const Product = require("../models/product.js");
 // [GET] /products - Lấy danh sách sản phẩm
 exports.getAllProducts = async (req, res) => {
   try {
-    const { category, search } = req.query;
+    const { category, search, page = 1, limit = 10 } = req.query;
 
     let filter = {};
 
@@ -12,11 +12,25 @@ exports.getAllProducts = async (req, res) => {
     }
 
     if (search) {
-      filter.name = { $regex: search, $options: "i" }; 
+      filter.name = { $regex: search, $options: "i" };
     }
 
-    const products = await Product.find(filter).populate("categories");
-    res.status(200).json(products);
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [products, total] = await Promise.all([
+      Product.find(filter)
+        .populate("categories")
+        .skip(skip)
+        .limit(parseInt(limit)),
+      Product.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      products,
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

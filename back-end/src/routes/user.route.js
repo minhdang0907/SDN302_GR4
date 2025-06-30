@@ -13,5 +13,7 @@ router.get("/profile", verifyToken, (req, res) => {
 });
 router.post("/request-reset-password", userController.requestResetPassword);
 router.post("/reset-password", userController.resetPassword);
+router.post("/address", userController.addAddress);
+router.get("/:userId/addresses", userController.getAddresses);
 
 module.exports = router;
