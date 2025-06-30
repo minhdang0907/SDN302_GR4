@@ -1,4 +1,6 @@
 const Order = require("../models/order.js");
+const Product = require("../models/product");
+const Cart = require("../models/cart.js");
 
 const getAllOrder = async (req, res) => {
   try {
@@ -41,7 +43,67 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const createOrder = async (req, res) => {
+  try {
+    const { user_id, items, total_amount, shipping_address, payment_method } = req.body;
+
+    // 1. Kiểm tra tồn kho trước
+    for (const item of items) {
+      const product = await Product.findById(item.product_id);
+      if (!product) {
+        return res.status(404).json({ message: `Sản phẩm với ID ${item.product_id} không tồn tại.` });
+      }
+      if (product.stock < item.quantity) {
+        return res.status(400).json({ message: `Sản phẩm "${product.name}" không đủ hàng trong kho.` });
+      }
+    }
+
+    // 2. Chống tạo đơn trùng nếu thanh toán PayOS
+    if (payment_method === "PayOS") {
+      const existed = await Order.findOne({
+        user_id,
+        total_amount,
+        payment_method: "PayOS",
+        createdAt: { $gte: new Date(Date.now() - 60 * 1000) }, // trong vòng 1 phút gần nhất
+      });
+
+      if (existed) {
+        return res.status(200).json({ message: "Đơn hàng đã được tạo trước đó", order: existed });
+      }
+    }
+
+    // 3. Tạo đơn hàng
+    const order = new Order({
+      user_id,
+      items,
+      total_amount,
+      shipping_address,
+      payment_method,
+    });
+    await order.save();
+
+    // 4. Trừ số lượng trong kho
+    for (const item of items) {
+      await Product.findByIdAndUpdate(item.product_id, {
+        $inc: { stock: -item.quantity },
+      });
+    }
+
+    // 5. Xoá giỏ hàng của user
+    await Cart.deleteOne({ user_id });
+
+    return res.status(201).json({ message: "Đơn hàng đã được tạo thành công.", order });
+
+  } catch (err) {
+    console.error("Lỗi tạo đơn hàng:", err);
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+      
+    
 module.exports = {
   getAllOrder,
-  updateOrderStatus 
+  updateOrderStatus,
+  createOrder 
 };

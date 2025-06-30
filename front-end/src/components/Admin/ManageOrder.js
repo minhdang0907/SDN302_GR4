@@ -71,6 +71,7 @@ const ManageOrder = () => {
               <th>Tổng tiền</th>
               <th>Trạng thái</th>
               <th>Phương thức thanh toán</th>
+              <th>Địa chỉ giao hàng</th>
               <th>Ngày đặt</th>
             </tr>
           </thead>
@@ -102,6 +103,7 @@ const ManageOrder = () => {
                   </select>
                 </td>
                 <td>{order.payment_method}</td>
+                <td>{order.shipping_address}</td>
                 <td>
                   {new Date(order.created_at).toLocaleDateString("vi-VN")}
                 </td>

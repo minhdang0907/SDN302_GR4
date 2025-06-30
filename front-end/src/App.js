@@ -14,6 +14,9 @@ import AdminLayout from "./components/Admin/AdminLayout";
 import ManageOrder from "./components/Admin/ManageOrder";
 import ManageDiscount from "./components/Admin/ManageDiscount";
 import Cart from "./components/Cart";
+import Checkout from "./components/Checkout";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
+import CheckoutFail from "./pages/CheckoutFail";
 function App() {
   return (
     <BrowserRouter>
@@ -25,6 +28,9 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
+            <Route path="/checkout/fail" element={<CheckoutFail />} />
           </Route>
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<Admin />} />

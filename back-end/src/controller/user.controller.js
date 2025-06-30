@@ -117,3 +117,19 @@ exports.verifyOTP = async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 };
+
+exports.getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select("-password -otp -otp_expiry");
+
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng." });
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error("Lỗi khi lấy thông tin người dùng:", err.message);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};

@@ -13,7 +13,7 @@ const OrderSchema = new Schema({
   total_amount: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'shipped', 'delivered', 'cancelled'], default: 'pending' },
   shipping_address: { type: String, required: true },
-  payment_method: { type: String, enum: ['COD', 'online'], required: true },
+  payment_method: { type: String, enum: ['COD', 'PayOS'], required: true },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
 });
