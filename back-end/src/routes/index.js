@@ -10,6 +10,7 @@ const orderRoutes = require("./order.route");
 const cartRoutes = require("./cart.route");
 const discountRoutes = require("./discount.route");
 
+
 router.use("/products", productRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/users", userRouter);
@@ -20,3 +21,4 @@ router.use("/carts", cartRoutes);
 
 router.use("/discounts", discountRoutes);
 module.exports = router;
+
