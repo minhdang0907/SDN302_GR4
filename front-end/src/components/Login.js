@@ -4,28 +4,39 @@ import { Image } from "react-bootstrap";
 import axios from "axios";
 import { toast } from "react-toastify";
 import validator from "validator";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const navigate = useNavigate();
   const handleSubmit = async () => {
     if (!validator.isEmail(email)) {
       toast.error("Sai format email!!!");
       return;
     }
+
     try {
-      const res = await axios.post("http://localhost:9999/login", {
+      const res = await axios.post("http://localhost:9999/users/login", {
         email,
         password,
       });
 
       toast.success(res.data.message);
+
+      localStorage.setItem("user_id", res.data.user_id);
+
+      if (res.data.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (res) {
       if (res.status === 400) {
         toast.error(res.response.data.error);
         return;
       }
+      toast.error("Đăng nhập thất bại");
     }
   };
 

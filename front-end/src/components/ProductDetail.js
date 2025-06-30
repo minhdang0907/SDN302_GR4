@@ -10,7 +10,7 @@ import {
   Button,
   Spinner,
   Alert,
-  Form
+  Form,
 } from "react-bootstrap";
 
 const ProductDetail = () => {
@@ -23,7 +23,9 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
 
   const averageRating = reviews.length
-    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(
+        1
+      )
     : null;
 
   useEffect(() => {
@@ -32,7 +34,9 @@ const ProductDetail = () => {
         setLoading(true);
 
         // Lấy sản phẩm
-        const productRes = await axios.get(`http://localhost:9999/products/${id}`);
+        const productRes = await axios.get(
+          `http://localhost:9999/products/${id}`
+        );
         setProduct(productRes.data);
       } catch (err) {
         setError("Không thể tải thông tin sản phẩm.");
@@ -42,7 +46,9 @@ const ProductDetail = () => {
 
       try {
         // Lấy đánh giá
-        const reviewRes = await axios.get(`http://localhost:9999/reviews/product/${id}`);
+        const reviewRes = await axios.get(
+          `http://localhost:9999/reviews/product/${id}`
+        );
         setReviews(reviewRes.data);
       } catch (err) {
         console.warn("Không thể tải đánh giá:", err.message);
@@ -56,11 +62,20 @@ const ProductDetail = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
+    const userId = localStorage.getItem("user_id");
+
+    if (!userId) {
+      alert("Vui lòng đăng nhập để thêm vào giỏ hàng.");
+      return;
+    }
+
     try {
-      await axios.post("http://localhost:9999/cart", {
-        user_id: "USER_ID_HERE", // Thay bằng ID người dùng thực tế
-        items: [{ product_id: id, quantity }]
+      await axios.post("http://localhost:9999/carts/add", {
+        user_id: userId,
+        product_id: id,
+        quantity,
       });
+
       alert("Đã thêm vào giỏ hàng!");
     } catch {
       alert("Thêm vào giỏ hàng thất bại.");
@@ -93,7 +108,7 @@ const ProductDetail = () => {
                   <img
                     className="d-block w-100"
                     src={url}
-                    alt={`${product.name} ${idx + 1}`}
+                    alt={`${product.name} - ảnh ${idx + 1}`}
                     style={{ objectFit: "cover" }}
                   />
                 </Carousel.Item>
@@ -103,7 +118,7 @@ const ProductDetail = () => {
             <img
               className="img-fluid"
               src="https://via.placeholder.com/600x400"
-              alt="No Image"
+              alt="Không có ảnh"
             />
           )}
         </Col>
@@ -119,7 +134,9 @@ const ProductDetail = () => {
                 {"★".repeat(Math.round(averageRating))}
                 {"☆".repeat(5 - Math.round(averageRating))}
               </span>
-              <small>({averageRating} / 5 từ {reviews.length} đánh giá)</small>
+              <small>
+                ({averageRating} / 5 từ {reviews.length} đánh giá)
+              </small>
             </div>
           ) : (
             <small className="text-muted d-block mb-2">Chưa có đánh giá</small>
@@ -140,8 +157,14 @@ const ProductDetail = () => {
 
           <p>{product.description}</p>
 
-          <Form.Group as={Row} className="align-items-center mb-4" controlId="qty">
-            <Form.Label column sm="3">Số lượng:</Form.Label>
+          <Form.Group
+            as={Row}
+            className="align-items-center mb-4"
+            controlId="qty"
+          >
+            <Form.Label column sm="3">
+              Số lượng:
+            </Form.Label>
             <Col sm="3">
               <Form.Control
                 type="number"
@@ -149,7 +172,9 @@ const ProductDetail = () => {
                 max={product.stock}
                 value={quantity}
                 onChange={(e) =>
-                  setQuantity(Math.max(1, Math.min(product.stock, +e.target.value)))
+                  setQuantity(
+                    Math.max(1, Math.min(product.stock, +e.target.value))
+                  )
                 }
               />
             </Col>
@@ -175,7 +200,9 @@ const ProductDetail = () => {
         reviews.map((review, index) => (
           <div key={index} className="mb-4 border-bottom pb-3">
             <div className="d-flex justify-content-between align-items-center mb-1">
-              <strong>{review.user_id?.full_name || "Người dùng ẩn danh"}</strong>
+              <strong>
+                {review.user_id?.full_name || "Người dùng ẩn danh"}
+              </strong>
               <small className="text-muted">
                 {new Date(review.created_at).toLocaleDateString("vi-VN")}
               </small>
@@ -184,7 +211,11 @@ const ProductDetail = () => {
               {"★".repeat(review.rating)}
               {"☆".repeat(5 - review.rating)}
             </div>
-            <p>{review.comment || <em className="text-muted">Không có nội dung.</em>}</p>
+            <p>
+              {review.comment || (
+                <em className="text-muted">Không có nội dung.</em>
+              )}
+            </p>
           </div>
         ))
       )}

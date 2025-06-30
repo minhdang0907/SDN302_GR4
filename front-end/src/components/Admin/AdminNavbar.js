@@ -1,7 +1,7 @@
 // src/components/AdminNavbar.js
 import React from "react";
-import { Container, Dropdown, Nav, Navbar, NavDropdown } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
+
 
 const AdminNavbar = () => {
   return (
@@ -11,12 +11,12 @@ const AdminNavbar = () => {
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link href="#users">Users</Nav.Link>
-            <Nav.Link href="#products">Products</Nav.Link>
-            <Nav.Link href="#orders">Orders</Nav.Link>
-            <Nav.Link href="#categories">Categories</Nav.Link>
-            <Nav.Link href="#discounts">Discounts</Nav.Link>
-            <Nav.Link href="#reviews">Reviews</Nav.Link>
+            <Nav.Link href="/admin/users">Users</Nav.Link>
+            <Nav.Link href="/admin/products">Products</Nav.Link>
+            <Nav.Link href="/admin/orders">Order</Nav.Link>
+            <Nav.Link href="/admin/categories">Categories</Nav.Link>
+            <Nav.Link href="/admin/discounts">Discounts</Nav.Link>
+            <Nav.Link href="/admin/reviews">Reviews</Nav.Link>
           </Nav>
           <Nav>
             <NavDropdown title="Admin" id="collapsible-nav-dropdown">
