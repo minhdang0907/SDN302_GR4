@@ -1,39 +1,73 @@
 const User = require("../models/user");
+const nodemailer = require("nodemailer");
+const bcrypt = require("bcrypt");
 
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Hàm gửi mail OTP
+async function sendOTPEmail(to, otp) {
+    // Cấu hình transporter với Gmail (hoặc SMTP khác)
+    let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: "nguyenlink3387@gmail.com", // Thay bằng email của bạn
+            pass: "qrcc opli uumc cfrv" // Thay bằng mật khẩu ứng dụng hoặc mật khẩu email của bạn
+        }
+    });
+
+    // Nội dung email
+    let mailOptions = {
+        from: '"Shop GR4" <yourgmail@gmail.com>',
+        to,
+        subject: "Mã OTP xác thực tài khoản",
+        text: `Mã OTP của bạn là: ${otp}`
+    };
+
+    await transporter.sendMail(mailOptions);
 }
 
 exports.register = async (req, res) => {
     try {
         const { full_name, email, phone, password } = req.body;
 
-        // Kiểm tra mật khẩu
         if (!password || password.length < 8) {
             return res.status(400).json({ error: "Mật khẩu phải có ít nhất 8 ký tự" });
         }
 
-        // Kiểm tra email đã tồn tại chưa
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ error: "Email đã tồn tại" });
         }
 
-        // Kiểm tra số điện thoại đã tồn tại chưa
         const existingPhone = await User.findOne({ phone });
         if (existingPhone) {
             return res.status(400).json({ error: "Số điện thoại đã tồn tại" });
         }
 
         const otp = generateOTP();
-        const otp_expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 phút
+        const otp_expiry = new Date(Date.now() + 10 * 60 * 1000);
 
-        const user = new User({ full_name, email, phone, password, otp, otp_expiry });
+        // Hash password trước khi lưu
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Lưu user với is_verified: false, otp, otp_expiry
+        const user = new User({
+            full_name,
+            email,
+            phone,
+            password: hashedPassword,
+            otp,
+            otp_expiry,
+            is_verified: false
+        });
         await user.save();
 
-        res.status(201).json({
-            message: "Đăng ký thành công! OTP đã được tạo.",
-            otp // Trả OTP về response để bạn test dễ dàng
+        await sendOTPEmail(email, otp);
+
+        res.status(200).json({
+            message: "OTP đã được gửi qua email."
         });
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -42,12 +76,12 @@ exports.register = async (req, res) => {
 
 exports.verifyOTP = async (req, res) => {
     try {
-        const { email, otp } = req.body;
+        const { email, otp_input } = req.body;
         const user = await User.findOne({ email });
 
-        if (!user) return res.status(404).json({ error: "Không tìm thấy user" });
+        if (!user) return res.status(400).json({ error: "Không tìm thấy user" });
         if (user.is_verified) return res.status(400).json({ error: "Tài khoản đã xác thực" });
-        if (user.otp !== otp) return res.status(400).json({ error: "OTP không đúng" });
+        if (user.otp !== otp_input) return res.status(400).json({ error: "OTP không đúng" });
         if (user.otp_expiry < new Date()) return res.status(400).json({ error: "OTP đã hết hạn" });
 
         user.is_verified = true;
@@ -55,7 +89,46 @@ exports.verifyOTP = async (req, res) => {
         user.otp_expiry = undefined;
         await user.save();
 
-        res.json({ message: "Xác thực thành công!" });
+        res.json({ message: "Đăng ký thành công!" });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
+exports.requestResetPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ error: "Không tìm thấy user" });
+
+        const otp = generateOTP();
+        const otp_expiry = new Date(Date.now() + 10 * 60 * 1000);
+        user.otp = otp;
+        user.otp_expiry = otp_expiry;
+        await user.save();
+
+        await sendOTPEmail(email, otp);
+
+        res.json({ message: "OTP đặt lại mật khẩu đã được gửi qua email." });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    try {
+        const { email, otp_input, new_password } = req.body;
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ error: "Không tìm thấy user" });
+        if (user.otp !== otp_input) return res.status(400).json({ error: "OTP không đúng" });
+        if (user.otp_expiry < new Date()) return res.status(400).json({ error: "OTP đã hết hạn" });
+
+        user.password = await bcrypt.hash(new_password, 10);
+        user.otp = undefined;
+        user.otp_expiry = undefined;
+        await user.save();
+
+        res.json({ message: "Đặt lại mật khẩu thành công!" });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }

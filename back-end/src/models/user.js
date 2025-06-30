@@ -9,9 +9,9 @@ const UserSchema = new Schema({
   role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
-  otp: { type: String }, // Thêm trường OTP
-  otp_expiry: { type: Date }, // Thời gian hết hạn OTP
-  is_verified: { type: Boolean, default: false } // Đã xác thực chưa
+  otp: { type: String },
+  otp_expiry: { type: Date },
+  is_verified: { type: Boolean, default: false }
 });
 
 const User = mongoose.model("User", UserSchema);
