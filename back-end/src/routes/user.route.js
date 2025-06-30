@@ -11,5 +11,7 @@ router.get("/:id", userController.getUserById);
 router.get("/profile", verifyToken, (req, res) => {
     res.json({ message: "Bạn đã đăng nhập", user: req.user });
 });
+router.post("/request-reset-password", userController.requestResetPassword);
+router.post("/reset-password", userController.resetPassword);
 
 module.exports = router;

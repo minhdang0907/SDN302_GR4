@@ -77,12 +77,12 @@ exports.register = async (req, res) => {
 
 exports.verifyOTP = async (req, res) => {
     try {
-        const { email, otp_input } = req.body;
+        const { email, otp } = req.body;
         const user = await User.findOne({ email });
 
-        if (!user) return res.status(400).json({ error: "Không tìm thấy user" });
+        if (!user) return res.status(404).json({ error: "Không tìm thấy user" });
         if (user.is_verified) return res.status(400).json({ error: "Tài khoản đã xác thực" });
-        if (user.otp !== otp_input) return res.status(400).json({ error: "OTP không đúng" });
+        if (user.otp !== otp) return res.status(400).json({ error: "OTP không đúng" });
         if (user.otp_expiry < new Date()) return res.status(400).json({ error: "OTP đã hết hạn" });
 
         user.is_verified = true;
@@ -180,7 +180,7 @@ exports.verifyOTP = async (req, res) => {
         user.otp_expiry = undefined;
         await user.save();
 
-        res.json({ message: "Xác thực thành công!" });
+        res.json({ message: "Đăng ký thành công!" });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
