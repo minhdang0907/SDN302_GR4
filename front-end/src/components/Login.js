@@ -113,7 +113,7 @@ const Login = () => {
                 href="#!"
                 role="button"
               >
-                <i className="fab fa-twitter me-2"></i>Continue with Twitter
+                <i className="fab fa-twitter me-2"></i>Continue with TwitterSSSSSSS
               </a>
             </form>
           </div>
