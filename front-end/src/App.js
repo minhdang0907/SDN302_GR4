@@ -17,6 +17,7 @@ import Cart from "./components/Cart";
 import Checkout from "./components/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import CheckoutFail from "./pages/CheckoutFail";
+import ManageProduct from "./components/Admin/ManageProduct"; // Import ManageProduct component
 function App() {
   return (
     <BrowserRouter>
@@ -36,6 +37,7 @@ function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/orders" element={<ManageOrder />} />
             <Route path="/admin/discounts" element={<ManageDiscount />} />
+            <Route path="/admin/products" element={<ManageProduct />} /> {/* New route for ManageProduct */}
           </Route>
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<Admin />} />
