@@ -1,3 +1,7 @@
+require("dotenv").config();
+const jwt = require("jsonwebtoken");
+const SECRET_KEY = process.env.SECRET_KEY || "your_default_secret";
+
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const nodemailer = require("nodemailer");
@@ -140,10 +144,15 @@ exports.login = async (req, res) => {
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: "Email không tồn tại" });
+
+        // Thêm kiểm tra xác thực OTP
+        if (!user.is_verified) {
+            return res.status(400).json({ message: "Tài khoản chưa xác thực OTP" });
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: "Mật khẩu không đúng" });
-
-        //   return res.status(400).json({ message: "Email hoặc mật khẩu không đúng" });
 
         const token = jwt.sign(
             { id: user._id, role: user.role },
