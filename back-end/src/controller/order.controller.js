@@ -5,9 +5,9 @@ const Cart = require("../models/cart.js");
 const getAllOrder = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("user_id")
-      .populate("items.product_id", "name price")
-      .sort({ created_at: -1 });
+      .populate("user_id") 
+      .populate("items.product_id", "name price") 
+      .sort({ created_at: -1 }); 
 
     res.status(200).json(orders);
   } catch (error) {
