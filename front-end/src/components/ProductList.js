@@ -34,7 +34,7 @@ const ProductList = () => {
           axios.get("http://localhost:9999/products"),
           axios.get("http://localhost:9999/categories"),
         ]);
-        setProducts(prodRes.data);
+        setProducts(prodRes.data.products);
         setCategories(catRes.data);
       } catch (err) {
         setError("Không thể tải dữ liệu.");
@@ -136,9 +136,8 @@ const ProductList = () => {
                     Tồn kho: {p.stock}
                   </span>
                   <span
-                    className={`badge ${
-                      p.is_available ? "bg-success" : "bg-danger"
-                    }`}
+                    className={`badge ${p.is_available ? "bg-success" : "bg-danger"
+                      }`}
                   >
                     {p.is_available ? "Còn hàng" : "Hết hàng"}
                   </span>
