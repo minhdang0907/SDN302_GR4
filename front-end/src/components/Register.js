@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../utils/axios.customize";
 import { useState } from "react";
 import { Image } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
