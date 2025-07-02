@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../assets/login.css";
 import { Image } from "react-bootstrap";
-import axios from "axios";
+import axios from "../utils/axios.customize";
 import { toast } from "react-toastify";
 import validator from "validator";
 import { useNavigate } from "react-router-dom";
