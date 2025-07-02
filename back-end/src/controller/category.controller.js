@@ -21,3 +21,9 @@ exports.createCategory = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.deleteCategory = async (req, res) => {
+  try {
+    // const deleted =
+  } catch (err) {}
+};
