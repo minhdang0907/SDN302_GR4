@@ -33,7 +33,7 @@ const Login = () => {
       }
     } catch (res) {
       if (res.status === 400) {
-        toast.error(res.response.data.error);
+        toast.error(res.response.data.error || res.response.data.message);
         return;
       }
       toast.error("Đăng nhập thất bại");
@@ -87,10 +87,19 @@ const Login = () => {
                 type="button"
                 data-mdb-button-init
                 data-mdb-ripple-init
-                className="btn btn-primary btn-lg btn-block"
+                className="btn btn-primary btn-lg btn-block m-lg-2"
                 onClick={handleSubmit}
               >
                 Sign in
+              </button>
+              <button
+                type="button"
+                data-mdb-button-init
+                data-mdb-ripple-init
+                className="btn btn-primary btn-lg btn-block"
+                onClick={() => navigate("/register")}
+              >
+                Sign up
               </button>
 
               <div className="divider d-flex align-items-center my-4">
@@ -109,11 +118,15 @@ const Login = () => {
               <a
                 data-mdb-ripple-init
                 className="btn btn-primary btn-lg btn-block"
-                style={{ backgroundColor: "#55acee", margin: 5 }}
+                style={{
+                  backgroundColor: "#fff",
+                  color: "#000",
+                  margin: 5,
+                }}
                 href="#!"
                 role="button"
               >
-                <i className="fab fa-twitter me-2"></i>Continue with TwitterSSSSSSS
+                <i className="fab fa-twitter me-2"></i>Continue with Google
               </a>
             </form>
           </div>

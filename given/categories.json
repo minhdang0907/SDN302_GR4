@@ -3,14 +3,12 @@
     "_id": { "$oid": "60f71b8c2f8fb814b56fa2a1" },
     "name": "Hoa tình yêu",
     "created_at": { "$date": "2025-05-20T08:00:00Z" },
-    "updated_at": { "$date": "2025-05-20T08:00:00Z" },
-    "is_available": true
+    "updated_at": { "$date": "2025-05-20T08:00:00Z" }
   },
   {
     "_id": { "$oid": "60f71b8c2f8fb814b56fa2a2" },
     "name": "Hoa tươi",
     "created_at": { "$date": "2025-05-21T08:00:00Z" },
-    "updated_at": { "$date": "2025-05-21T08:00:00Z" },
-    "is_available": true
+    "updated_at": { "$date": "2025-05-21T08:00:00Z" }
   }
 ]

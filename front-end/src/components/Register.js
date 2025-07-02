@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 import { Image } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import validator from "validator";
 
@@ -12,6 +13,7 @@ const Register = () => {
     password: "",
     rePassword: "",
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,6 +53,7 @@ const Register = () => {
       console.log(res);
 
       toast.success(res.data.message);
+      navigate("/login");
     } catch (res) {
       if (res.status === 400) {
         toast.error(res.response.data.error);
@@ -150,9 +153,17 @@ const Register = () => {
 
               <button
                 type="submit"
-                className="btn btn-primary btn-lg btn-block"
+                className="btn btn-primary btn-lg btn-block m-lg-2"
               >
                 Sign up
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-primary btn-lg btn-block"
+                onClick={() => navigate("/login")}
+              >
+                Sign in
               </button>
 
               <div className="divider d-flex align-items-center my-4">
@@ -169,11 +180,11 @@ const Register = () => {
               </a>
               <a
                 className="btn btn-primary btn-lg btn-block"
-                style={{ backgroundColor: "#55acee", margin: 5 }}
+                style={{ backgroundColor: "#fff", margin: 5 }}
                 href="#!"
                 role="button"
               >
-                <i className="fab fa-twitter me-2"></i>Continue with Twitter
+                <i className="fab fa-twitter me-2"></i>Continue with Google
               </a>
             </form>
           </div>
