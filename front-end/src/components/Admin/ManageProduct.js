@@ -256,6 +256,15 @@ function ManageProduct() {
                 ))}
               </Form.Select>
             </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Ảnh (dán nhiều link, cách nhau dấu phẩy)</Form.Label>
+              <Form.Control
+                type="text"
+                value={addProduct.images || ""}
+                onChange={e => setAddProduct({ ...addProduct, images: e.target.value })}
+                placeholder="https://example.com/1.jpg, https://example.com/2.jpg"
+              />
+            </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>

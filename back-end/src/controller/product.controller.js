@@ -79,3 +79,40 @@ exports.deleteProduct = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+const handleAddProduct = async () => {
+  try {
+    await axios.post("http://localhost:9999/products", {
+      ...addProduct,
+      price: Number(addProduct.price),
+      stock: Number(addProduct.stock),
+      images: addProduct.images
+        ? addProduct.images.split(",").map((img) => img.trim())
+        : [],
+    });
+    setShowAdd(false);
+    setSuccess("Đã thêm sản phẩm mới!");
+    setAddProduct({
+      name: "",
+      price: "",
+      stock: "",
+      is_available: true,
+      description: "",
+      categories: "",
+      images: "",
+    });
+    fetchProducts();
+  } catch (err) {
+    setError("Thêm sản phẩm thất bại");
+  }
+};
+
+const [addProduct, setAddProduct] = useState({
+  name: "",
+  price: "",
+  stock: "",
+  is_available: true,
+  description: "",
+  categories: "",
+  images: "",
+});

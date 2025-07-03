@@ -15,5 +15,8 @@ router.post("/request-reset-password", userController.requestResetPassword);
 router.post("/reset-password", userController.resetPassword);
 router.post("/address", userController.addAddress);
 router.get("/:userId/addresses", userController.getAddresses);
+router.put("/:id", userController.updateUser);
+router.delete("/:id", userController.deleteUser);
+router.get("/", userController.getAllUsers);
 
 module.exports = router;
