@@ -107,12 +107,4 @@ const handleAddProduct = async () => {
   }
 };
 
-const [addProduct, setAddProduct] = useState({
-  name: "",
-  price: "",
-  stock: "",
-  is_available: true,
-  description: "",
-  categories: "",
-  images: "",
-});
+
