@@ -17,7 +17,6 @@ import Cart from "./components/Cart";
 import Checkout from "./components/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import CheckoutFail from "./pages/CheckoutFail";
-import Header from './components/Header';
 import ManageProduct from "./components/Admin/ManageProduct"; // Import ManageProduct component
 import ManageCategory from "./components/Admin/ManageCategory";
 import ManageUser from "./components/Admin/ManageUser";
@@ -46,7 +45,7 @@ function App() {
             <Route path="/admin/reviews" element={<ManageReview />} />
             <Route path="/admin/products" element={<ManageProduct />} />
             <Route path="/admin/products" element={<ManageProduct />} />
-            <Route path="/admin/users" element={<ManageUser />} /> {/* Thêm route quản lý user */}
+            <Route path="/admin/users" element={<ManageUser />} />
           </Route>
         </Routes>
         <ToastContainer />
