@@ -13,7 +13,7 @@ connectDB();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: "http://localhost:3000", // hoặc "*" nếu test nhanh
+    origin: "http://localhost:3001", // hoặc "*" nếu test nhanh
     credentials: true
 }));
 
