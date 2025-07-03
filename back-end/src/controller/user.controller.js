@@ -240,3 +240,45 @@ exports.getAddresses = async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 };
+
+// Sửa thông tin user
+exports.updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { full_name, phone, role, is_verified } = req.body;
+        const user = await User.findById(id);
+        if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
+
+        if (full_name !== undefined) user.full_name = full_name;
+        if (phone !== undefined) user.phone = phone;
+        if (role !== undefined) user.role = role;
+        if (is_verified !== undefined) user.is_verified = is_verified;
+
+        await user.save();
+        res.json({ message: "Cập nhật user thành công", user });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
+// Xóa user
+exports.deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleted = await User.findByIdAndDelete(id);
+        if (!deleted) return res.status(404).json({ message: "Không tìm thấy user" });
+        res.json({ message: "Đã xóa user thành công" });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
+// Lấy tất cả người dùng
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find().select("-password -otp -otp_expiry");
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

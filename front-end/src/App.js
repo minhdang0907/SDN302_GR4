@@ -18,6 +18,7 @@ import Checkout from "./components/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import CheckoutFail from "./pages/CheckoutFail";
 import ManageProduct from "./components/Admin/ManageProduct"; // Import ManageProduct component
+import ManageUser from "./components/Admin/ManageUser"; // Thêm dòng này
 function App() {
   return (
     <BrowserRouter>
@@ -37,10 +38,8 @@ function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/orders" element={<ManageOrder />} />
             <Route path="/admin/discounts" element={<ManageDiscount />} />
-            <Route path="/admin/products" element={<ManageProduct />} /> {/* New route for ManageProduct */}
-          </Route>
-          <Route element={<AdminLayout />}>
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/products" element={<ManageProduct />} />
+            <Route path="/admin/users" element={<ManageUser />} /> {/* Thêm route quản lý user */}
           </Route>
         </Routes>
         <ToastContainer />
