@@ -80,6 +80,7 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 const handleAddProduct = async () => {
   try {
     await axios.post("http://localhost:9999/products", {
@@ -108,3 +109,5 @@ const handleAddProduct = async () => {
 };
 
 
+=======
+>>>>>>> main

@@ -1,47 +1,52 @@
 import React, { useState } from "react";
-import "../assets/login.css";
+import "../assets/login.css"; // Đảm bảo bạn có file CSS này hoặc xóa dòng này
 import { Image } from "react-bootstrap";
 import axios from "../utils/axios.customize";
 import { toast } from "react-toastify";
 import validator from "validator";
+// component Login không cần useNavigate nữa vì ta dùng window.location.href
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
-  const handleSubmit = async () => {
-    if (!validator.isEmail(email)) {
-      toast.error("Sai format email!!!");
-      return;
-    }
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const navigate = useNavigate();
 
-    try {
-      const res = await axios.post("http://localhost:9999/users/login", {
-        email,
-        password,
-      });
+    const handleSubmit = async () => {
+        if (!validator.isEmail(email)) {
+            toast.error("Sai format email!!!");
+            return;
+        }
+        try {
+            const res = await axios.post(
+                "http://localhost:9999/users/login",
+                { email, password },
+                { withCredentials: true }
+            );
 
-      toast.success(res.data.message);
+            toast.success(res.message);
 
-      localStorage.setItem("user_id", res.data.user_id);
+            // ✅ LƯU THÔNG TIN VÀO LOCAL STORAGE
+            localStorage.setItem('token', res.token);
+            localStorage.setItem('user', JSON.stringify({
+                fullName: res.full_name,
+                userId: res.user_id,
+                role: res.role
+            }));
 
-      if (res.data.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
-    } catch (res) {
-      if (res.status === 400) {
-        toast.error(res.response.data.error || res.response.data.message);
-        return;
-      }
-      toast.error("Đăng nhập thất bại");
-    }
-  };
+            navigate("/")
 
-  return (
-    <section className="vh-100">
+        } catch (err) {
+            if (err.response && err.response.data) {
+                toast.error(err.response.data.message || "Lỗi đăng nhập");
+            } else {
+                toast.error("Lỗi kết nối đến server");
+            }
+        }
+    };
+
+    return (
+        <section className="vh-100">
       <div className="container py-5 h-100">
         <div className="row d-flex align-items-center justify-content-center h-100">
           <div className="col-md-8 col-lg-7 col-xl-6">
