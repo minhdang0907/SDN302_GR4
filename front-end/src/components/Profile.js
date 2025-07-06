@@ -1,7 +1,7 @@
 // src/components/Profile.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { Link } from 'react-router-dom';
 const Profile = () => {
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ const Profile = () => {
                 // Lấy thông báo lỗi từ server nếu có, nếu không thì báo lỗi chung
                 const errorMessage = err.response?.data?.message || 'Không thể tải thông tin tài khoản. Vui lòng thử lại.';
                 setError(errorMessage);
-                
+
             } finally {
                 setLoading(false);
             }
@@ -35,7 +35,7 @@ const Profile = () => {
     if (error) {
         return <div className="container mt-5 text-center"><p className="text-danger">{error}</p></div>;
     }
-    
+
     // Nếu không có dữ liệu (trường hợp hiếm)
     if (!profileData) {
         return null;
@@ -75,8 +75,10 @@ const Profile = () => {
                                     )}
                                 </li>
                             </ul>
-                             <div className="text-center mt-4">
-                                <button className="btn btn-primary">Chỉnh sửa thông tin</button>
+                            <div className="text-center mt-4">
+                                <Link to="/profile/edit" className="btn btn-primary">
+                                    Chỉnh sửa thông tin
+                                </Link>
                             </div>
                         </div>
                     </div>
