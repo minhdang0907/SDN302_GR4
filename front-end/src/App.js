@@ -15,6 +15,7 @@ import AdminLayout from "./components/Admin/AdminLayout";
 import ProtectedRoute from "./utils/ProtectedRoute"; // ✨ IMPORT "NGƯỜI GÁC CỔNG"
 
 // Pages & Components
+import EditProfilePage from './components/EditProfilePage';
 import ProductList from "./components/ProductList";
 import ProductDetail from "./components/ProductDetail";
 import LoginPage from "./pages/LoginPage";
@@ -53,14 +54,22 @@ function App() {
               }
 
             />
-            <Route 
-             path="/profile"
+            <Route
+              path="/profile"
               element={
-                <ProtectedRoute allowedRoles={['customer', 'admin']}>
+                <ProtectedRoute allowedRoles={['customer']}>
                   <Profile />
-                  </ProtectedRoute>
+                </ProtectedRoute>
               }
-              />
+            />
+            <Route
+              path="/profile/edit"
+              element={
+                <ProtectedRoute>
+                  <EditProfilePage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/checkout"
               element={
@@ -72,7 +81,6 @@ function App() {
             <Route path="/checkout/success" element={<CheckoutSuccess />} />
             <Route path="/checkout/fail" element={<CheckoutFail />} />
           </Route>
-
           {/* === LUỒNG ADMIN === */}
           <Route
             element={
