@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import validator from "validator";
 import { useNavigate } from "react-router-dom"; // ✨ Import hook để điều hướng
 import { useAuth } from '../context/AuthContext';   // ✨ Import hook để dùng context
-
+import { Link} from 'react-router-dom'; 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -29,7 +29,7 @@ const Login = () => {
             toast.success(res.data.message);
 
             // Lấy dữ liệu từ response
-            const { token, user_id, role, full_name,email: userEmail, phone } = res.data;
+            const { token, user_id, role, full_name, email: userEmail, phone } = res.data;
 
             // Tạo object user chuẩn với key 'full_name'
             const userToStore = {
@@ -45,7 +45,11 @@ const Login = () => {
 
             // Điều hướng bằng navigate, không tải lại trang
             navigate('/');
-
+            if (role === 'admin') {
+                navigate('/admin'); // Nếu là admin, vào trang quản trị
+            } else {
+                navigate('/'); // Nếu là customer, về trang chủ
+            }
         } catch (err) {
             const errorMessage = err.response?.data?.message || "Lỗi đăng nhập";
             toast.error(errorMessage);
@@ -105,6 +109,11 @@ const Login = () => {
                             >
                                 Sign in
                             </button>
+                            <Link to="/register" className="btn btn-primary btn-lg btn-block"
+                            >
+
+                                Sign up
+                            </Link>
 
                             <div className="divider d-flex align-items-center my-4">
                                 <p className="text-center fw-bold mx-3 mb-0 text-muted">OR</p>

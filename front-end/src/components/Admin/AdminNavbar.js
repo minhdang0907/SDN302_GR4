@@ -1,10 +1,17 @@
 // src/components/AdminNavbar.js
 import React from "react";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import { FaUsers, FaBoxOpen, FaClipboardList, FaTags, FaComments, FaUserCircle, FaSignOutAlt, FaHome } from "react-icons/fa";
-
+import { Link, useNavigate } from "react-router-dom";
+import { FaUsers, FaBoxOpen, FaClipboardList, FaTags, FaComments, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { useAuth } from "../../context/AuthContext";
 const AdminNavbar = () => {
+  const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
   return (
     <Navbar expand="lg" bg="dark" variant="dark" sticky="top" className="shadow-sm">
       <Container>
@@ -44,20 +51,12 @@ const AdminNavbar = () => {
 
           <Nav>
             <NavDropdown title={<span><FaUserCircle className="me-1" /> Admin</span>} id="admin-nav-dropdown" align="end">
-              <NavDropdown.Item as={Link} to="#">
-                <FaUserCircle className="me-2" />
-                Profile
-              </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/">
-                <FaHome className="me-2" />
-                Home
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item as={Link} to="#">
-                <FaSignOutAlt className="me-2" />
-                Logout
-              </NavDropdown.Item>
-            </NavDropdown>
+                            
+                            <NavDropdown.Item onClick={handleLogout}>
+                                <FaSignOutAlt className="me-2" />
+                                Logout
+                            </NavDropdown.Item>
+                        </NavDropdown>
           </Nav>
         </Navbar.Collapse>
       </Container>
