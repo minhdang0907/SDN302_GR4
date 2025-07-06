@@ -1,17 +1,19 @@
 import React, { useState } from "react";
-import "../assets/login.css"; // Đảm bảo bạn có file CSS này hoặc xóa dòng này
+import "../assets/login.css";
 import { Image } from "react-bootstrap";
 import axios from "axios";
 import { toast } from "react-toastify";
 import validator from "validator";
-// component Login không cần useNavigate nữa vì ta dùng window.location.href
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // ✨ Import hook để điều hướng
+import { useAuth } from '../context/AuthContext';   // ✨ Import hook để dùng context
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    // const navigate = useNavigate();
+    const navigate = useNavigate(); // ✨ Khởi tạo navigate
+    const auth = useAuth();         // ✨ Lấy context
 
+    // ✨ Toàn bộ logic xử lý được viết lại để đồng bộ với AuthContext
     const handleSubmit = async () => {
         if (!validator.isEmail(email)) {
             toast.error("Sai format email!!!");
@@ -21,32 +23,36 @@ const Login = () => {
         try {
             const res = await axios.post(
                 "http://localhost:9999/api/users/login",
-                { email, password },
-                { withCredentials: true }
+                { email, password }
             );
 
             toast.success(res.data.message);
 
-            // ✅ LƯU THÔNG TIN VÀO LOCAL STORAGE
-            localStorage.setItem('token', res.data.token);
-            localStorage.setItem('user', JSON.stringify({
-                fullName: res.data.full_name,
-                userId: res.data.user_id,
-                role: res.data.role
-            }));
+            // Lấy dữ liệu từ response
+            const { token, user_id, role, full_name } = res.data;
 
-            // Tải lại trang để Header cập nhật trạng thái đăng nhập
-            window.location.href = "/";
+            // Tạo object user chuẩn với key 'full_name'
+            const userToStore = {
+                id: user_id,
+                role: role,
+                full_name: full_name,
+            };
+
+            // Gọi hàm login từ context để cập nhật trạng thái toàn cục
+            auth.login(userToStore, token);
+
+            // Điều hướng bằng navigate, không tải lại trang
+            navigate('/');
 
         } catch (err) {
-            if (err.response && err.response.data) {
-                toast.error(err.response.data.message || "Lỗi đăng nhập");
-            } else {
-                toast.error("Lỗi kết nối đến server");
-            }
+            const errorMessage = err.response?.data?.message || "Lỗi đăng nhập";
+            toast.error(errorMessage);
         }
     };
 
+    // =============================================================
+    // PHẦN GIAO DIỆN JSX BÊN DƯỚI ĐƯỢC GIỮ NGUYÊN THEO YÊU CẦU CỦA BẠN
+    // =============================================================
     return (
         <section className="vh-100">
             <div className="container py-5 h-100">
