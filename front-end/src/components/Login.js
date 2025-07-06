@@ -29,13 +29,15 @@ const Login = () => {
             toast.success(res.data.message);
 
             // Lấy dữ liệu từ response
-            const { token, user_id, role, full_name } = res.data;
+            const { token, user_id, role, full_name,email: userEmail, phone } = res.data;
 
             // Tạo object user chuẩn với key 'full_name'
             const userToStore = {
                 id: user_id,
                 role: role,
                 full_name: full_name,
+                email: userEmail,
+                phone: phone
             };
 
             // Gọi hàm login từ context để cập nhật trạng thái toàn cục
