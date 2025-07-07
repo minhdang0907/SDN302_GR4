@@ -40,6 +40,7 @@ router.get("/profile", verifyToken, async (req, res) => {
         res.status(500).json({ message: "Lỗi server" });
     }
 });
+router.put("/profile", verifyToken, userController.updateMyProfile);
 // Thêm địa chỉ mới (cần đăng nhập)
 router.post("/address", verifyToken, userController.addAddress);
 
