@@ -20,11 +20,55 @@ function ManageCategory() {
   }, []);
 
   const handleSubmit = () => {
-    toast.success("hẹ hẹ hẹ");
+    if (editId) {
+      // Update category
+      axios
+        .put(`http://localhost:9999/categories/${editId}`, form)
+        .then(() => {
+          setCategories(
+            categories.map((c) => (c._id === editId ? { ...c, ...form } : c))
+          );
+          toast.success("Cập nhật thành công");
+          setShowModal(false);
+        })
+        .catch(() => {
+          toast.error("Cập nhật thất bại");
+        });
+    } else {
+      // Create new category
+      axios
+        .post("http://localhost:9999/categories", form)
+        .then((res) => {
+          setCategories([...categories, res.data]);
+          toast.success("Thêm mới thành công");
+          setShowModal(false);
+        })
+        .catch(() => {
+          toast.error("Thêm mới thất bại");
+        });
+    }
   };
 
-  const handleDelete = () => {
-    toast.error("hẹ hẹ hẹ");
+  const handleDelete = (cate) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xoá?")) return;
+
+    axios
+      .delete(
+        cate.deleted
+          ? `http://localhost:9999/categories/${cate._id}/restore`
+          : `http://localhost:9999/categories/${cate._id}`
+      )
+      .then(() => {
+        setCategories(
+          categories.map((c) =>
+            c._id === cate._id ? { ...c, deleted: !c.deleted } : c
+          )
+        );
+        toast.success(cate.deleted ? "Khôi phục thành công" : "Xoá thành công");
+      })
+      .catch(() => {
+        toast.error("Xoá thất bại");
+      });
   };
 
   return (
@@ -69,13 +113,23 @@ function ManageCategory() {
                 >
                   Sửa
                 </Button>{" "}
-                <Button
-                  size="sm"
-                  variant="danger"
-                  onClick={() => handleDelete(c._id)}
-                >
-                  Xoá
-                </Button>
+                {!c.deleted ? (
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() => handleDelete(c)}
+                  >
+                    Xoá
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="success"
+                    onClick={() => handleDelete(c)}
+                  >
+                    Khôi phục
+                  </Button>
+                )}
               </td>
             </tr>
           ))}

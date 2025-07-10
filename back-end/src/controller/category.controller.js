@@ -3,7 +3,7 @@ const Product = require("../models/product.js");
 
 exports.getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find();
+    const categories = await Category.findWithDeleted();
     res.status(200).json(categories);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -59,6 +59,24 @@ exports.restoreCategory = async (req, res) => {
     if (!deleted)
       return res.status(404).json({ message: "Category not found" });
     res.status(200).json({ message: "Restored successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.updateCategory = async (req, res) => {
+  try {
+    const updatedCategory = await Category.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    if (!updatedCategory)
+      return res.status(404).json({ message: "Category not found" });
+    res.status(200).json({
+      message: "Updated successfully",
+      data: updatedCategory,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

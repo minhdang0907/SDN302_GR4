@@ -2,18 +2,32 @@
 import React from "react";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
-import { FaUsers, FaBoxOpen, FaClipboardList, FaTags, FaComments, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import {
+  FaUsers,
+  FaBoxOpen,
+  FaClipboardList,
+  FaTags,
+  FaComments,
+  FaUserCircle,
+  FaSignOutAlt,
+} from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 const AdminNavbar = () => {
   const { logout } = useAuth();
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
   return (
-    <Navbar expand="lg" bg="dark" variant="dark" sticky="top" className="shadow-sm">
+    <Navbar
+      expand="lg"
+      bg="dark"
+      variant="dark"
+      sticky="top"
+      className="shadow-sm"
+    >
       <Container>
         <Navbar.Brand as={Link} to="/admin" className="fw-bold text-warning">
           <FaUserCircle className="me-2" />
@@ -50,13 +64,20 @@ const AdminNavbar = () => {
           </Nav>
 
           <Nav>
-            <NavDropdown title={<span><FaUserCircle className="me-1" /> Admin</span>} id="admin-nav-dropdown" align="end">
-                            
-                            <NavDropdown.Item onClick={handleLogout}>
-                                <FaSignOutAlt className="me-2" />
-                                Logout
-                            </NavDropdown.Item>
-                        </NavDropdown>
+            <NavDropdown
+              title={
+                <span>
+                  <FaUserCircle className="me-1" /> Admin
+                </span>
+              }
+              id="admin-nav-dropdown"
+              align="end"
+            >
+              <NavDropdown.Item onClick={handleLogout}>
+                <FaSignOutAlt className="me-2" />
+                Logout
+              </NavDropdown.Item>
+            </NavDropdown>
           </Nav>
         </Navbar.Collapse>
       </Container>
