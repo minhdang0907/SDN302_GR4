@@ -1,32 +1,18 @@
-import React, { useState, useEffect } from 'react';
+// src/components/Header.js
+import React from 'react';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext'; // ✨ 1. Import và sử dụng context
 
 const Header = () => {
-    const [user, setUser] = useState(null);
+    // ✨ 2. Lấy user và hàm logout trực tiếp từ AuthContext, không dùng state riêng nữa
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-    }, []);
-
-    const handleLogout = async () => {
-        try {
-            await axios.post("http://localhost:9999/api/users/logout", {}, {
-                withCredentials: true
-            });
-        } catch (error) {
-            console.error("API logout call failed, proceeding with client-side logout:", error);
-        } finally {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            setUser(null);
-            navigate('/login');
-        }
+    // ✨ 3. Hàm logout bây giờ chỉ cần gọi hàm từ context và điều hướng
+    const handleLogout = () => {
+        logout(); // Hàm logout trong context sẽ xử lý việc xóa token và state
+        navigate('/login');
     };
 
     return (
@@ -47,7 +33,8 @@ const Header = () => {
                         <Nav.Link as={Link} to="/cart">🛒 Giỏ hàng</Nav.Link>
 
                         {user ? (
-                            <NavDropdown title={`Xin chào, ${user.fullName}`} id="basic-nav-dropdown">
+                            // ✨ 4. Sửa lại key cho đúng với dữ liệu từ API (full_name)
+                            <NavDropdown title={`Xin chào, ${user.full_name}`} id="user-dropdown">
                                 <NavDropdown.Item as={Link} to="/profile">
                                     Thông tin tài khoản
                                 </NavDropdown.Item>

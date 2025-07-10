@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Container,
   Row,
@@ -11,10 +11,11 @@ import {
   Spinner,
   Card,
 } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; 
 
 const Checkout = () => {
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();           
+  const userId = user?.id;              
   const [cart, setCart] = useState(null);
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("COD");
@@ -25,80 +26,87 @@ const Checkout = () => {
   const initDiscountPercent = location.state?.discountPercent || 0;
   const [discountPercent] = useState(initDiscountPercent);
   const navigate = useNavigate();
-  const userId = localStorage.getItem("user_id");
 
   useEffect(() => {
-    if (!userId) return navigate("/login");
+    if (!userId) {
+      navigate("/login"); 
+      return;
+    }
 
-    const fetchData = async () => {
+    const fetchCart = async () => {
       try {
-        const [userRes, cartRes] = await Promise.all([
-          axios.get(`http://localhost:9999/users/${userId}`),
-          axios.get(`http://localhost:9999/carts/${userId}`),
-        ]);
-        setUser(userRes.data);
+        const cartRes = await axios.get(`http://localhost:9999/carts/${userId}`);
         setCart(cartRes.data);
       } catch (err) {
-        setError("Lỗi khi tải dữ liệu người dùng hoặc giỏ hàng.");
+        setError("Lỗi khi tải giỏ hàng.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchCart();
   }, [userId, navigate]);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
+    e.preventDefault();
+    setError("");
 
-  if (!address) return setError("Vui lòng nhập địa chỉ giao hàng.");
-
-  const items = cart.items.map((item) => ({
-  product_id: item.product_id._id,
-  quantity: Number(item.quantity),
-  price: Number(item.product_id.price),
-}));
-
-
-  if (paymentMethod === "COD") {
-    try {
-      await axios.post("http://localhost:9999/orders/create", {
-        user_id: userId,
-        items,
-        total_amount,
-        shipping_address: address,
-        payment_method: "COD",
-      });
-
-      alert("Đặt hàng thành công (COD)!");
-      navigate("/");
-    } catch (err) {
-      setError(err.response?.data?.message || "Không thể tạo đơn hàng.");
+    if (!address) {
+      setError("Vui lòng nhập địa chỉ giao hàng.");
+      return;
     }
-  } else if (paymentMethod === "PayOS") {
-    try {
-      localStorage.setItem("checkout_address", address);
-    localStorage.setItem("checkout_discount", discountPercent.toString());
-    localStorage.setItem("checkout_items", JSON.stringify(items));
-      localStorage.setItem("checkout_total", total_amount.toString());
-      const res = await axios.post("http://localhost:9999/payment/payos/create", {
-        amount: total_amount,
-        description: "Thanh toán đơn hàng",
-      });
 
-      if (res.data && res.data.checkoutUrl) {
-        window.location.href = res.data.checkoutUrl;
-      } else {
-        setError("Không lấy được đường dẫn thanh toán từ PayOS.");
+    const items = cart.items.map((item) => ({
+      product_id: item.product_id._id,
+      quantity: Number(item.quantity),
+      price: Number(item.product_id.price),
+    }));
+
+    const subtotal = cart.items.reduce(
+      (sum, item) => sum + item.product_id.price * item.quantity,
+      0
+    );
+    const discountAmount = subtotal * (discountPercent / 100);
+    const total_amount = subtotal - discountAmount;
+
+    if (paymentMethod === "COD") {
+      try {
+        await axios.post("http://localhost:9999/orders/create", {
+          user_id: userId,
+          items,
+          total_amount,
+          shipping_address: address,
+          payment_method: "COD",
+        });
+
+        alert("Đặt hàng thành công (COD)!");
+        navigate("/");
+      } catch (err) {
+        setError(err.response?.data?.message || "Không thể tạo đơn hàng.");
       }
-    } catch (err) {
-      console.error("Lỗi PayOS:", err);
-      setError("Không thể tạo thanh toán PayOS.");
-    }
-  }
-};
+    } else if (paymentMethod === "PayOS") {
+      try {
+        localStorage.setItem("checkout_address", address);
+        localStorage.setItem("checkout_discount", discountPercent.toString());
+        localStorage.setItem("checkout_items", JSON.stringify(items));
+        localStorage.setItem("checkout_total", total_amount.toString());
 
+        const res = await axios.post("http://localhost:9999/payment/payos/create", {
+          amount: total_amount,
+          description: "Thanh toán đơn hàng",
+        });
+
+        if (res.data?.checkoutUrl) {
+          window.location.href = res.data.checkoutUrl;
+        } else {
+          setError("Không lấy được đường dẫn thanh toán từ PayOS.");
+        }
+      } catch (err) {
+        console.error("Lỗi PayOS:", err);
+        setError("Không thể tạo thanh toán PayOS.");
+      }
+    }
+  };
 
   if (loading)
     return (
@@ -108,11 +116,7 @@ const Checkout = () => {
     );
 
   if (!user || !cart)
-    return (
-      <Alert variant="danger">
-        Không thể tải thông tin người dùng hoặc giỏ hàng.
-      </Alert>
-    );
+    return <Alert variant="danger">Không thể tải thông tin người dùng hoặc giỏ hàng.</Alert>;
 
   const subtotal = cart.items.reduce(
     (sum, item) => sum + item.product_id.price * item.quantity,
@@ -174,13 +178,12 @@ const Checkout = () => {
                 onChange={(e) => setPaymentMethod(e.target.value)}
               />
               <Form.Check
-  type="radio"
-  label="Thanh toán qua PayOS"
-  value="PayOS"
-  checked={paymentMethod === "PayOS"}
-  onChange={(e) => setPaymentMethod(e.target.value)}
-/>
-
+                type="radio"
+                label="Thanh toán qua PayOS"
+                value="PayOS"
+                checked={paymentMethod === "PayOS"}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              />
             </div>
           </Form.Group>
 

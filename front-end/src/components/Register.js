@@ -1,6 +1,6 @@
 import axios from "../utils/axios.customize";
 import { useState } from "react";
-import { Image } from "react-bootstrap";
+import { Button, Form, Image, Modal } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import validator from "validator";
@@ -13,6 +13,12 @@ const Register = () => {
     password: "",
     rePassword: "",
   });
+  const [showModal, setShowModal] = useState(false);
+  const [formOtp, setFormOtp] = useState({
+    email: "",
+    otp: "",
+  });
+
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -50,15 +56,44 @@ const Register = () => {
         phone: formData.phone,
         password: formData.password,
       });
-      console.log(res);
 
       toast.success(res.data.message);
-      navigate("/login");
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        password: "",
+        rePassword: "",
+      });
+      setShowModal(true);
+      // navigate("/login");
     } catch (res) {
       if (res.status === 400) {
         toast.error(res.response.data.error);
         return;
       }
+    }
+  };
+
+  const handleSendOtp = async (e) => {
+    if (!validator.isEmail(formOtp.email)) {
+      toast.error("Sai format email!!!");
+      return;
+    }
+    try {
+      const res = await axios.post("http://localhost:9999/users/verify-otp", {
+        email: formOtp.email,
+        otp: formOtp.otp,
+      });
+      console.log(res);
+      if (res.status !== 200) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(res.message);
+      navigate("/login");
+    } catch (error) {
+      toast.error(error.error);
     }
   };
 
@@ -160,10 +195,18 @@ const Register = () => {
 
               <button
                 type="button"
-                className="btn btn-primary btn-lg btn-block"
+                className="btn btn-primary btn-lg btn-block m-lg-2"
                 onClick={() => navigate("/login")}
               >
                 Sign in
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-primary btn-lg btn-block m-lg-2"
+                onClick={() => setShowModal(true)}
+              >
+                Nhập otp
               </button>
 
               <div className="divider d-flex align-items-center my-4">
@@ -180,7 +223,7 @@ const Register = () => {
               </a>
               <a
                 className="btn btn-primary btn-lg btn-block"
-                style={{ backgroundColor: "#fff", margin: 5 }}
+                style={{ backgroundColor: "#55acee", margin: 5 }}
                 href="#!"
                 role="button"
               >
@@ -190,6 +233,46 @@ const Register = () => {
           </div>
         </div>
       </div>
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        backdrop="static"
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Hãy nhập mã OTP đã gửi về mail của bạn</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-2">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                value={formOtp.email}
+                onChange={(e) =>
+                  setFormOtp({ ...formOtp, email: e.target.value })
+                }
+              />
+            </Form.Group>
+            <Form.Group className="mb-2">
+              <Form.Label>OTP</Form.Label>
+              <Form.Control
+                value={formOtp.otp}
+                onChange={(e) =>
+                  setFormOtp({ ...formOtp, otp: e.target.value })
+                }
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Huỷ
+          </Button>
+          <Button variant="primary" onClick={handleSendOtp}>
+            Lưu
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </section>
   );
 };

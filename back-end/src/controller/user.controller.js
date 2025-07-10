@@ -159,7 +159,7 @@ exports.login = async (req, res) => {
 
         res.cookie("token", token, { httpOnly: true, maxAge: 2 * 60 * 60 * 1000 });
 
-        res.status(200).json({ message: "Đăng nhập thành công", token, user_id: user._id, role: user.role ,  full_name: user.full_name });
+        res.status(200).json({ message: "Đăng nhập thành công", token, user_id: user._id, role: user.role ,  full_name: user.full_name, phone: user.phone , email: user.email });
     } catch (err) {
         res.status(500).json({ message: "Lỗi server", error: err.message });
     }
@@ -190,7 +190,38 @@ exports.verifyOTP = async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 };
+// chỉnh sửa profile 
+exports.updateMyProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { full_name, email, phone } = req.body;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "Không tìm thấy người dùng." });
+        }
+        if (email && email !== user.email) {
+            const existingUser = await User.findOne({ email: email });
+            if (existingUser) {
+                return res.status(400).json({ message: "Email này đã được sử dụng." });
+            }
+            user.email = email;
+        }
+        user.full_name = full_name || user.full_name;
+        user.phone = phone || user.phone;
+        user.updated_at = Date.now();
+        const updatedUser = await user.save();
+        const { password, ...userInfo } = updatedUser._doc;
 
+        res.status(200).json({
+            message: "Cập nhật thông tin thành công!",
+            user: userInfo
+        });
+
+    } catch (error) {
+        console.error("Lỗi khi cập nhật profile:", error);
+        res.status(500).json({ message: "Lỗi server" });
+    }
+};
 exports.getUserById = async (req, res) => {
     try {
         const { id } = req.params;

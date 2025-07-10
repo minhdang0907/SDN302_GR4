@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-
+import { useAuth } from '../context/AuthContext'; 
 
 
 const Cart = () => {
@@ -19,7 +19,8 @@ const Cart = () => {
   const [voucher, setVoucher] = useState("");
   const [discountPercent, setDiscountPercent] = useState(0);
   const navigate = useNavigate();
-  const userId = localStorage.getItem("user_id");
+  const { user } = useAuth(); 
+  const userId = user?.id || localStorage.getItem("user_id");
 
   useEffect(() => {
     if (!userId) {
