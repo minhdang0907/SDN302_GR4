@@ -1,6 +1,6 @@
 const Product = require("../models/product.js");
 
-// [GET] /products - Lấy danh sách sản phẩm
+// [GET] /products - Lấy danh    sản phẩm
 exports.getAllProducts = async (req, res) => {
   try {
     const { category, search, page = 1, limit = 10 } = req.query;
