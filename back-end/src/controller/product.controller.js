@@ -50,7 +50,11 @@ exports.getProductById = async (req, res) => {
 // [POST] /products - Tạo sản phẩm mới
 exports.createProduct = async (req, res) => {
   try {
-    const newProduct = new Product(req.body);
+    const imageUrls = req.files ? req.files.map(f => f.path) : [];
+    const newProduct = new Product({
+      ...req.body,
+      images: imageUrls,
+    });
     const saved = await newProduct.save();
     res.status(201).json(saved);
   } catch (err) {
@@ -81,14 +85,24 @@ exports.deleteProduct = async (req, res) => {
 };
 
 const handleAddProduct = async () => {
+  const errMsg = validateProduct(addProduct);
+  if (errMsg) {
+    setError(errMsg);
+    return;
+  }
   try {
-    await axios.post("http://localhost:9999/products", {
-      ...addProduct,
-      price: Number(addProduct.price),
-      stock: Number(addProduct.stock),
-      images: addProduct.images
-        ? addProduct.images.split(",").map((img) => img.trim())
-        : [],
+    const formData = new FormData();
+    formData.append("name", addProduct.name);
+    formData.append("price", addProduct.price);
+    formData.append("stock", addProduct.stock);
+    formData.append("is_available", addProduct.is_available);
+    formData.append("description", addProduct.description);
+    formData.append("categories", addProduct.categories);
+    for (let i = 0; i < addProduct.images.length; i++) {
+      formData.append("images", addProduct.images[i]);
+    }
+    await axios.post("http://localhost:9999/products", formData, {
+      headers: { "Content-Type": "multipart/form-data" }
     });
     setShowAdd(false);
     setSuccess("Đã thêm sản phẩm mới!");
