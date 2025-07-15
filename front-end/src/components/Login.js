@@ -31,13 +31,16 @@ const Login = () => {
       } else {
         navigate("/");
       }
-    } catch (res) {
-      if (res.status === 400) {
-        toast.error(res.response.data.error);
-        return;
-      }
-      toast.error("Đăng nhập thất bại");
-    }
+    } catch (error) {
+  console.log("Login error:", error.response?.data); // Thêm dòng này
+  
+  if (error.response?.status === 400) {
+    toast.error(error.response.data.message || error.response.data.error);
+    return;
+  }
+  toast.error("Đăng nhập thất bại");
+}
+
   };
 
   return (

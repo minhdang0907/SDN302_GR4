@@ -2,7 +2,11 @@
 import React from "react";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 
-
+const handleLogout = () => {
+    localStorage.removeItem("user_id");
+    window.location.href = "/";
+  };
+  
 const AdminNavbar = () => {
   return (
     <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
@@ -14,6 +18,7 @@ const AdminNavbar = () => {
             <Nav.Link href="/admin/users">Users</Nav.Link>
             <Nav.Link href="/admin/products">Products</Nav.Link>
             <Nav.Link href="/admin/orders">Order</Nav.Link>
+            <Nav.Link href="/admin/order-history">Order History</Nav.Link>
             <Nav.Link href="/admin/categories">Categories</Nav.Link>
             <Nav.Link href="/admin/discounts">Discounts</Nav.Link>
             <Nav.Link href="/admin/reviews">Reviews</Nav.Link>
@@ -22,7 +27,9 @@ const AdminNavbar = () => {
             <NavDropdown title="Admin" id="collapsible-nav-dropdown">
               <NavDropdown.Item href="#action/3.1">Admin</NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item href="#action/3.2">Logout</NavDropdown.Item>
+              <NavDropdown.Item onClick={handleLogout}>
+                                Đăng xuất
+                              </NavDropdown.Item>
               <NavDropdown.Divider />
               <NavDropdown.Item href="/">Home</NavDropdown.Item>
             </NavDropdown>
