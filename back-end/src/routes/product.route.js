@@ -13,7 +13,7 @@ router.get("/:id", productController.getProductById);
 router.post("/", upload.array("images", 5), productController.createProduct);
 
 // PUT cập nhật sản phẩm
-router.put("/:id", productController.updateProduct);
+router.put("/:id", upload.array("images", 5), productController.updateProduct);
 
 // DELETE sản phẩm
 router.delete("/:id", productController.deleteProduct);

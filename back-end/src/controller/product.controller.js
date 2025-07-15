@@ -65,7 +65,11 @@ exports.createProduct = async (req, res) => {
 // [PUT] /products/:id - Cập nhật sản phẩm
 exports.updateProduct = async (req, res) => {
   try {
-    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    let updateData = { ...req.body };
+    if (req.files && req.files.length > 0) {
+      updateData.images = req.files.map(f => f.path);
+    }
+    const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) return res.status(404).json({ message: "Product not found" });
     res.status(200).json(updated);
   } catch (err) {

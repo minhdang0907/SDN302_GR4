@@ -60,8 +60,7 @@ function ManageProduct() {
     if (!product.price || isNaN(product.price) || Number(product.price) <= 0) return "Giá phải là số dương";
     if (product.stock === "" || isNaN(product.stock) || Number(product.stock) < 0) return "Tồn kho phải là số không âm";
     if (!product.categories) return "Vui lòng chọn danh mục";
-    // Kiểm tra file ảnh
-    if (!product.images || product.images.length === 0) return "Vui lòng chọn ít nhất 1 ảnh";
+    // Khi sửa, nếu không chọn ảnh mới thì không cần validate images
     return "";
   };
 
@@ -97,13 +96,21 @@ function ManageProduct() {
       return;
     }
     try {
-      await axios.put(`http://localhost:9999/products/${editProduct._id}`, {
-        ...editProduct,
-        price: Number(editProduct.price),
-        stock: Number(editProduct.stock),
-        images: typeof editProduct.images === "string"
-          ? editProduct.images.split(",").map(i => i.trim()).filter(Boolean)
-          : editProduct.images,
+      const formData = new FormData();
+      formData.append("name", editProduct.name);
+      formData.append("price", editProduct.price);
+      formData.append("stock", editProduct.stock);
+      formData.append("is_available", editProduct.is_available);
+      formData.append("description", editProduct.description);
+      formData.append("categories", editProduct.categories);
+      // Nếu images là FileList (người dùng chọn file mới)
+      if (editProduct.images && editProduct.images.length && editProduct.images[0] instanceof File) {
+        for (let i = 0; i < editProduct.images.length; i++) {
+          formData.append("images", editProduct.images[i]);
+        }
+      }
+      await axios.put(`http://localhost:9999/products/${editProduct._id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
       });
       setShowEdit(false);
       setSuccess("Đã cập nhật sản phẩm!");
@@ -417,16 +424,15 @@ function ManageProduct() {
                 </Form.Select>
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Ảnh (dán nhiều link, cách nhau dấu phẩy)</Form.Label>
+                <Form.Label>Ảnh sản phẩm</Form.Label>
                 <Form.Control
-                  type="text"
-                  value={editProduct.images || ""}
-                  onChange={e => setEditProduct({ ...editProduct, images: e.target.value })}
-                  placeholder="https://example.com/1.jpg, https://example.com/2.jpg"
-                  required
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={e => setEditProduct({ ...editProduct, images: e.target.files })}
                 />
                 <Form.Text className="text-muted">
-                  Mỗi link phải là một URL hợp lệ (jpg, png, ...).
+                  Nếu chọn ảnh mới, ảnh cũ sẽ bị thay thế.
                 </Form.Text>
               </Form.Group>
             </Form>
