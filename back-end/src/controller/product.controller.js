@@ -1,6 +1,6 @@
 const Product = require("../models/product.js");
 
-// [GET] /products - Lấy danh sách sản phẩm
+// [GET] /products - Lấy danh    sản phẩm
 exports.getAllProducts = async (req, res) => {
   try {
     const { category, search, page = 1, limit = 10 } = req.query;
@@ -50,7 +50,11 @@ exports.getProductById = async (req, res) => {
 // [POST] /products - Tạo sản phẩm mới
 exports.createProduct = async (req, res) => {
   try {
-    const newProduct = new Product(req.body);
+    const imageUrls = req.files ? req.files.map(f => f.path) : [];
+    const newProduct = new Product({
+      ...req.body,
+      images: imageUrls,
+    });
     const saved = await newProduct.save();
     res.status(201).json(saved);
   } catch (err) {
