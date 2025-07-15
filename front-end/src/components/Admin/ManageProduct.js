@@ -60,11 +60,8 @@ function ManageProduct() {
     if (!product.price || isNaN(product.price) || Number(product.price) <= 0) return "Giá phải là số dương";
     if (product.stock === "" || isNaN(product.stock) || Number(product.stock) < 0) return "Tồn kho phải là số không âm";
     if (!product.categories) return "Vui lòng chọn danh mục";
-    let imgs = typeof product.images === "string"
-      ? product.images.split(",").map(i => i.trim()).filter(Boolean)
-      : Array.isArray(product.images) ? product.images : [];
-    if (!imgs.length) return "Vui lòng nhập ít nhất 1 link ảnh";
-    if (imgs.some(url => !/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(url))) return "Mỗi link ảnh phải là một URL hợp lệ (jpg, png, ...)";
+    // Kiểm tra file ảnh
+    if (!product.images || product.images.length === 0) return "Vui lòng chọn ít nhất 1 ảnh";
     return "";
   };
 
@@ -124,13 +121,18 @@ function ManageProduct() {
       return;
     }
     try {
-      await axios.post("http://localhost:9999/products", {
-        ...addProduct,
-        price: Number(addProduct.price),
-        stock: Number(addProduct.stock),
-        images: addProduct.images
-          ? addProduct.images.split(",").map((img) => img.trim()).filter(Boolean)
-          : [],
+      const formData = new FormData();
+      formData.append("name", addProduct.name);
+      formData.append("price", addProduct.price);
+      formData.append("stock", addProduct.stock);
+      formData.append("is_available", addProduct.is_available);
+      formData.append("description", addProduct.description);
+      formData.append("categories", addProduct.categories);
+      for (let i = 0; i < addProduct.images.length; i++) {
+        formData.append("images", addProduct.images[i]);
+      }
+      await axios.post("http://localhost:9999/products", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
       });
       setShowAdd(false);
       setSuccess("Đã thêm sản phẩm mới!");
