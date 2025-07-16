@@ -100,7 +100,7 @@ const UserOrderHistory = () => {
       params.append('page', filters.page);
       params.append('limit', '10');
 
-      const res = await axios.get(`http://localhost:9999/orders/user/${userId}?${params}`);
+      const res = await axios.get(`http://localhost:9999/api/orders/user/${userId}?${params}`);
       
       // Kiểm tra trạng thái đánh giá cho từng sản phẩm
       const ordersWithReviewStatus = await Promise.all(
@@ -110,7 +110,7 @@ const UserOrderHistory = () => {
               try {
                 if (order.status === 'delivered' && item.product_id?._id) {
                   const reviewCheck = await axios.get(
-                    `http://localhost:9999/reviews/check/${userId}/${item.product_id._id}`
+                    `http://localhost:9999/api/reviews/check/${userId}/${item.product_id._id}`
                   );
                   return {
                     ...item,
@@ -202,7 +202,7 @@ const UserOrderHistory = () => {
 
       console.log("Submitting review:", reviewPayload);
 
-      const response = await axios.post("http://localhost:9999/reviews", reviewPayload);
+      const response = await axios.post("http://localhost:9999/api/reviews", reviewPayload);
       
       console.log("Review response:", response.data);
       
