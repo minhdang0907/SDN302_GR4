@@ -7,28 +7,25 @@ require("../models/user");
 const getReviewByProductId = async (req, res) => {
   try {
     const productId = req.params.id;
-    
-    console.log("🔍 Getting reviews for product:", productId);
 
-    // Validate productId
-    if (!mongoose.Types.ObjectId.isValid(productId)) {
-      console.log("❌ Invalid product ID");
-      return res.status(400).json([]);
+    if (!productId || !mongoose.Types.ObjectId.isValid(productId.trim())) {
+      return res.status(400).json({ message: "ID sản phẩm không hợp lệ hoặc bị thiếu." });
     }
 
-    // Lấy tất cả reviews cho sản phẩm này
-    const reviews = await Review.find({ product_id: productId })
-      .populate("user_id", "full_name email")
+    const cleanProductId = productId.trim();
+
+    const reviews = await Review.find({ product_id: cleanProductId })
+      .populate("user_id",)
       .sort({ created_at: -1 });
 
-    console.log("✅ Found reviews:", reviews.length);
+    if (!reviews.length) {
+      return res.status(404).json({ message: "Không có đánh giá nào cho sản phẩm này." });
+    }
 
-    // Trả về array trực tiếp
     res.status(200).json(reviews);
-
   } catch (error) {
-    console.error("❌ Lỗi khi lấy đánh giá:", error);
-    res.status(500).json([]);
+    console.error("Lỗi khi lấy đánh giá:", error);
+    res.status(500).json({ message: "Lỗi máy chủ." });
   }
 };
 
