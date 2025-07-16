@@ -3,78 +3,32 @@ const mongoose = require("mongoose");
 const Review = require("../models/review.js");
 require("../models/user");
 
-
-// Hàm tính toán thống kê đánh giá
-const calculateReviewStats = (reviews) => {
-  const totalReviews = reviews.length;
-  if (totalReviews === 0) {
-    return {
-      averageRating: 0,
-      totalReviews: 0,
-      ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-    };
-  }
-
-  const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  let totalRating = 0;
-
-  reviews.forEach(review => {
-    ratingDistribution[review.rating]++;
-    totalRating += review.rating;
-  });
-
-  return {
-    averageRating: (totalRating / totalReviews).toFixed(1),
-    totalReviews,
-    ratingDistribution
-  };
-};
-
+// sửa đổi hàm getReviewByProductId để sử dụng hàm tính toán thống kê đánh giá
 const getReviewByProductId = async (req, res) => {
   try {
     const productId = req.params.id;
-    const { page = 1, limit = 10, rating, sortBy = 'newest' } = req.query;
+    
+    console.log("🔍 Getting reviews for product:", productId);
 
-    if (!productId || !mongoose.Types.ObjectId.isValid(productId.trim())) {
-      return res.status(400).json({ message: "ID sản phẩm không hợp lệ hoặc bị thiếu." });
+    // Validate productId
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      console.log("❌ Invalid product ID");
+      return res.status(400).json([]);
     }
 
-    const cleanProductId = productId.trim();
-    const skip = (page - 1) * limit;
-
-    // Build query
-    const query = { product_id: cleanProductId };
-    if (rating) query.rating = parseInt(rating);
-
-    // Build sort
-    let sort = {};
-    switch (sortBy) {
-      case 'oldest': sort = { created_at: 1 }; break;
-      case 'highest': sort = { rating: -1, created_at: -1 }; break;
-      case 'lowest': sort = { rating: 1, created_at: -1 }; break;
-      default: sort = { created_at: -1 };
-    }
-
-    const reviews = await Review.find(query)
+    // Lấy tất cả reviews cho sản phẩm này
+    const reviews = await Review.find({ product_id: productId })
       .populate("user_id", "full_name email")
-      .sort(sort)
-      .skip(skip)
-      .limit(parseInt(limit));
+      .sort({ created_at: -1 });
 
-    const total = await Review.countDocuments(query);
-    const allReviews = await Review.find({ product_id: cleanProductId });
-    const stats = calculateReviewStats(allReviews);
+    console.log("✅ Found reviews:", reviews.length);
 
-    res.status(200).json({
-      reviews,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / limit),
-      total,
-      stats
-    });
+    // Trả về array trực tiếp
+    res.status(200).json(reviews);
+
   } catch (error) {
-    console.error("Lỗi khi lấy đánh giá:", error);
-    res.status(500).json({ message: "Lỗi máy chủ." });
+    console.error("❌ Lỗi khi lấy đánh giá:", error);
+    res.status(500).json([]);
   }
 };
 
@@ -85,20 +39,20 @@ const createReview = async (req, res) => {
 
     // Validate required fields
     if (!user_id || !product_id || !rating) {
-      return res.status(400).json({ 
-        message: "Thiếu thông tin bắt buộc: user_id, product_id, rating" 
+      return res.status(400).json({
+        message: "Thiếu thông tin bắt buộc: user_id, product_id, rating"
       });
     }
 
     // Kiểm tra đã đánh giá chưa
-    const existingReview = await Review.findOne({ 
-      user_id, 
-      product_id 
+    const existingReview = await Review.findOne({
+      user_id,
+      product_id
     });
 
     if (existingReview) {
-      return res.status(400).json({ 
-        message: "Bạn đã đánh giá sản phẩm này rồi" 
+      return res.status(400).json({
+        message: "Bạn đã đánh giá sản phẩm này rồi"
       });
     }
 
@@ -129,9 +83,9 @@ const checkUserReview = async (req, res) => {
   try {
     const { userId, productId } = req.params;
 
-    const review = await Review.findOne({ 
-      user_id: userId, 
-      product_id: productId 
+    const review = await Review.findOne({
+      user_id: userId,
+      product_id: productId
     });
 
     res.status(200).json({
@@ -144,8 +98,8 @@ const checkUserReview = async (req, res) => {
   }
 };
 
-module.exports = { 
+module.exports = {
   getReviewByProductId,
   createReview,
   checkUserReview
- };
+};
