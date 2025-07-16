@@ -1,62 +1,24 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-const userSchema = new mongoose.Schema({
-  full_name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    trim: true
-  },
-  phone: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 6
-  },
-  role: {
-    type: String,
-    enum: ['customer', 'admin'],
-    default: 'customer'
-  },
-  // Thêm các field cho OTP và xác thực
-  otp: { 
-    type: String 
-  },
-  otp_expiry: { 
-    type: Date 
-  },
-  is_verified: { 
-    type: Boolean, 
-    default: false 
-  },
-  // Thêm addresses
+const UserSchema = new Schema({
+  full_name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  phone: { type: String, required: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
+  created_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now },
+  otp: { type: String },
+  otp_expiry: { type: Date },
+  is_verified: { type: Boolean, default: false },
   addresses: [
     {
-      address: { 
-        type: String, 
-        required: true 
-      },
-      is_default: { 
-        type: Boolean, 
-        default: false 
-      }
+      address: { type: String, required: true },
+      is_default: { type: Boolean, default: false }
     }
   ]
-}, {
-  timestamps: { 
-    createdAt: 'created_at', 
-    updatedAt: 'updated_at' 
-  }
 });
 
-module.exports = mongoose.model('User', userSchema);
+const User = mongoose.model("User", UserSchema);
+module.exports = User;

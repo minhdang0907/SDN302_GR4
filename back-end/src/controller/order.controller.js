@@ -1,48 +1,15 @@
 const Order = require("../models/order.js");
 const Product = require("../models/product");
 const Cart = require("../models/cart.js");
-const Review = require("../models/review.js");
 
 const getAllOrder = async (req, res) => {
   try {
-    const { startDate, endDate, status, page = 1, limit = 10 } = req.query;
-    
-    let filter = {};
-    
-    // Lọc theo ngày
-    if (startDate || endDate) {
-      filter.created_at = {};
-      if (startDate) {
-        filter.created_at.$gte = new Date(startDate);
-      }
-      if (endDate) {
-        filter.created_at.$lte = new Date(endDate + 'T23:59:59.999Z');
-      }
-    }
-    
-    // Lọc theo trạng thái
-    if (status) {
-      filter.status = status;
-    }
+    const orders = await Order.find()
+      .populate("user_id") 
+      .populate("items.product_id", "name price") 
+      .sort({ created_at: -1 }); 
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    const [orders, total] = await Promise.all([
-      Order.find(filter)
-        .populate("user_id", "full_name email phone") 
-        .populate("items.product_id", "name price images") 
-        .sort({ created_at: -1 })
-        .skip(skip)
-        .limit(parseInt(limit)),
-      Order.countDocuments(filter)
-    ]);
-
-    res.status(200).json({
-      orders,
-      total,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / limit)
-    });
+    res.status(200).json(orders);
   } catch (error) {
     console.error("Lỗi khi lấy danh sách đơn hàng:", error);
     res.status(500).json({ message: "Lỗi máy chủ." });
@@ -136,70 +103,16 @@ const createOrder = async (req, res) => {
 const getOrdersByUser = async (req, res) => {
   try {
     const { user_id } = req.params;
-    const { startDate, endDate, status, page = 1, limit = 10 } = req.query;
-    
-    let filter = { user_id };
-    
-    // Lọc theo ngày
-    if (startDate || endDate) {
-      filter.created_at = {};
-      if (startDate) {
-        filter.created_at.$gte = new Date(startDate);
-      }
-      if (endDate) {
-        filter.created_at.$lte = new Date(endDate + 'T23:59:59.999Z');
-      }
-    }
-    
-    // Lọc theo trạng thái
-    if (status) {
-      filter.status = status;
-    }
-
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    const [orders, total] = await Promise.all([
-      Order.find(filter)
-        .populate("items.product_id", "name price images")
-        .sort({ created_at: -1 })
-        .skip(skip)
-        .limit(parseInt(limit)),
-      Order.countDocuments(filter)
-    ]);
-
-    // Kiểm tra xem user đã review sản phẩm nào chưa
-    const ordersWithReviewStatus = await Promise.all(
-      orders.map(async (order) => {
-        const itemsWithReviewStatus = await Promise.all(
-          order.items.map(async (item) => {
-            const existingReview = await Review.findOne({
-              user_id,
-              product_id: item.product_id._id
-            });
-            return {
-              ...item.toObject(),
-              hasReviewed: !!existingReview
-            };
-          })
-        );
-        return {
-          ...order.toObject(),
-          items: itemsWithReviewStatus
-        };
-      })
-    );
-
-    res.status(200).json({
-      orders: ordersWithReviewStatus,
-      total,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / limit)
-    });
+    const orders = await Order.find({ user_id })
+      .populate("items.product_id", "name price")
+      .sort({ created_at: -1 });
+    res.status(200).json(orders);
   } catch (err) {
-    console.error("Lỗi khi lấy đơn hàng của user:", err);
     res.status(500).json({ message: "Lỗi máy chủ." });
   }
 };
+
+
 
 module.exports = {
   getAllOrder,

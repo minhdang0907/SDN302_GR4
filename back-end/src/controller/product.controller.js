@@ -1,6 +1,6 @@
 const Product = require("../models/product.js");
 
-// [GET] /products - Lấy danh sách sản phẩm
+// [GET] /products - Lấy danh    sản phẩm
 exports.getAllProducts = async (req, res) => {
   try {
     const { category, search, page = 1, limit = 10 } = req.query;
@@ -50,7 +50,11 @@ exports.getProductById = async (req, res) => {
 // [POST] /products - Tạo sản phẩm mới
 exports.createProduct = async (req, res) => {
   try {
-    const newProduct = new Product(req.body);
+    const imageUrls = req.files ? req.files.map(f => f.path) : [];
+    const newProduct = new Product({
+      ...req.body,
+      images: imageUrls,
+    });
     const saved = await newProduct.save();
     res.status(201).json(saved);
   } catch (err) {
@@ -61,7 +65,11 @@ exports.createProduct = async (req, res) => {
 // [PUT] /products/:id - Cập nhật sản phẩm
 exports.updateProduct = async (req, res) => {
   try {
-    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    let updateData = { ...req.body };
+    if (req.files && req.files.length > 0) {
+      updateData.images = req.files.map(f => f.path);
+    }
+    const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) return res.status(404).json({ message: "Product not found" });
     res.status(200).json(updated);
   } catch (err) {
@@ -79,3 +87,4 @@ exports.deleteProduct = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
