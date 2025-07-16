@@ -57,7 +57,13 @@ const Register = () => {
         password: formData.password,
       });
 
-      toast.success(res.data.message);
+      console.log(res);
+      if (res.error) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(res.message);
+
       setFormData({
         fullName: "",
         email: "",
@@ -69,7 +75,7 @@ const Register = () => {
       // navigate("/login");
     } catch (res) {
       if (res.status === 400) {
-        toast.error(res.response.data.error);
+        toast.error(res);
         return;
       }
     }
