@@ -105,7 +105,8 @@ function App() {
             <Route path="/admin/categories" element={<ManageCategory />} />
             <Route path="/admin/users" element={<ManageUser />} />
             <Route path="/admin/reviews" element={<ManageReview />} />
-            <Route path="/admin/products" element={<ManageProduct />} />          </Route>
+            <Route path="/admin/products" element={<ManageProduct />} />          
+            </Route>
         </Routes>
         <ToastContainer />
       </AuthProvider>
