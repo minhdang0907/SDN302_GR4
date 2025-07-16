@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, Button, Modal, Form, Alert, Row, Col, Pagination } from "react-bootstrap";
+import { Table, Button, Modal, Form, Alert, Row, Col, Pagination, Image } from "react-bootstrap";
 
 function ManageProduct() {
   const [products, setProducts] = useState([]);
@@ -21,6 +21,7 @@ function ManageProduct() {
     is_available: true,
     description: "",
     categories: "",
+    images: "",
   });
   const [showAdd, setShowAdd] = useState(false);
 
@@ -53,6 +54,16 @@ function ManageProduct() {
     }
   };
 
+  // Validate dữ liệu sản phẩm
+  const validateProduct = (product) => {
+    if (!product.name || !product.name.trim()) return "Tên sản phẩm không được để trống";
+    if (!product.price || isNaN(product.price) || Number(product.price) <= 0) return "Giá phải là số dương";
+    if (product.stock === "" || isNaN(product.stock) || Number(product.stock) < 0) return "Tồn kho phải là số không âm";
+    if (!product.categories) return "Vui lòng chọn danh mục";
+    // Khi sửa, nếu không chọn ảnh mới thì không cần validate images
+    return "";
+  };
+
   // Xóa sản phẩm
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
@@ -67,7 +78,11 @@ function ManageProduct() {
 
   // Mở modal sửa
   const handleEdit = (product) => {
-    setEditProduct({ ...product });
+    setEditProduct({
+      ...product,
+      categories: product.categories?._id || product.categories,
+      images: Array.isArray(product.images) ? product.images.join(", ") : (product.images || "")
+    });
     setShowEdit(true);
     setError("");
     setSuccess("");
@@ -75,8 +90,28 @@ function ManageProduct() {
 
   // Lưu sửa sản phẩm
   const handleSaveEdit = async () => {
+    const errMsg = validateProduct(editProduct);
+    if (errMsg) {
+      setError(errMsg);
+      return;
+    }
     try {
-      await axios.put(`http://localhost:9999/products/${editProduct._id}`, editProduct);
+      const formData = new FormData();
+      formData.append("name", editProduct.name);
+      formData.append("price", editProduct.price);
+      formData.append("stock", editProduct.stock);
+      formData.append("is_available", editProduct.is_available);
+      formData.append("description", editProduct.description);
+      formData.append("categories", editProduct.categories);
+      // Nếu images là FileList (người dùng chọn file mới)
+      if (editProduct.images && editProduct.images.length && editProduct.images[0] instanceof File) {
+        for (let i = 0; i < editProduct.images.length; i++) {
+          formData.append("images", editProduct.images[i]);
+        }
+      }
+      await axios.put(`http://localhost:9999/products/${editProduct._id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
       setShowEdit(false);
       setSuccess("Đã cập nhật sản phẩm!");
       fetchProducts();
@@ -87,11 +122,24 @@ function ManageProduct() {
 
   // Thêm sản phẩm mới
   const handleAddProduct = async () => {
+    const errMsg = validateProduct(addProduct);
+    if (errMsg) {
+      setError(errMsg);
+      return;
+    }
     try {
-      await axios.post("http://localhost:9999/products", {
-        ...addProduct,
-        price: Number(addProduct.price),
-        stock: Number(addProduct.stock),
+      const formData = new FormData();
+      formData.append("name", addProduct.name);
+      formData.append("price", addProduct.price);
+      formData.append("stock", addProduct.stock);
+      formData.append("is_available", addProduct.is_available);
+      formData.append("description", addProduct.description);
+      formData.append("categories", addProduct.categories);
+      for (let i = 0; i < addProduct.images.length; i++) {
+        formData.append("images", addProduct.images[i]);
+      }
+      await axios.post("http://localhost:9999/products", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
       });
       setShowAdd(false);
       setSuccess("Đã thêm sản phẩm mới!");
@@ -102,6 +150,7 @@ function ManageProduct() {
         is_available: true,
         description: "",
         categories: "",
+        images: "",
       });
       fetchProducts();
     } catch (err) {
@@ -119,7 +168,7 @@ function ManageProduct() {
       {success && <Alert variant="success">{success}</Alert>}
 
       {/* Nút thêm sản phẩm */}
-      <Button className="mb-3" onClick={() => setShowAdd(true)}>
+      <Button className="mb-3" onClick={() => { setShowAdd(true); setError(""); setSuccess(""); }}>
         Thêm sản phẩm
       </Button>
 
@@ -151,6 +200,8 @@ function ManageProduct() {
             <th>Giá</th>
             <th>Tồn kho</th>
             <th>Trạng thái</th>
+            <th>Danh mục</th>
+            <th>Ảnh</th>
             <th>Hành động</th>
           </tr>
         </thead>
@@ -161,6 +212,24 @@ function ManageProduct() {
               <td>{p.price.toLocaleString("vi-VN")}₫</td>
               <td>{p.stock}</td>
               <td>{p.is_available ? "Còn hàng" : "Hết hàng"}</td>
+              <td>{p.categories?.name || "Không rõ"}</td>
+              <td>
+                {Array.isArray(p.images) && p.images.length > 0 ? (
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {p.images.map((img, idx) => (
+                      <Image
+                        key={idx}
+                        src={img}
+                        alt="Ảnh"
+                        style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 4 }}
+                        thumbnail
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-muted">Không có</span>
+                )}
+              </td>
               <td>
                 <Button variant="warning" size="sm" onClick={() => handleEdit(p)}>
                   Sửa
@@ -206,6 +275,7 @@ function ManageProduct() {
                 type="text"
                 value={addProduct.name}
                 onChange={e => setAddProduct({ ...addProduct, name: e.target.value })}
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -214,6 +284,8 @@ function ManageProduct() {
                 type="number"
                 value={addProduct.price}
                 onChange={e => setAddProduct({ ...addProduct, price: e.target.value })}
+                min={0}
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -222,6 +294,8 @@ function ManageProduct() {
                 type="number"
                 value={addProduct.stock}
                 onChange={e => setAddProduct({ ...addProduct, stock: e.target.value })}
+                min={0}
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -249,12 +323,23 @@ function ManageProduct() {
               <Form.Select
                 value={addProduct.categories}
                 onChange={e => setAddProduct({ ...addProduct, categories: e.target.value })}
+                required
               >
                 <option value="">Chọn danh mục</option>
                 {categories.map(cat => (
                   <option key={cat._id} value={cat._id}>{cat.name}</option>
                 ))}
               </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Ảnh sản phẩm</Form.Label>
+              <Form.Control
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={e => setAddProduct({ ...addProduct, images: e.target.files })}
+                required
+              />
             </Form.Group>
           </Form>
         </Modal.Body>
@@ -282,6 +367,7 @@ function ManageProduct() {
                   type="text"
                   value={editProduct.name}
                   onChange={(e) => setEditProduct({ ...editProduct, name: e.target.value })}
+                  required
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -290,6 +376,8 @@ function ManageProduct() {
                   type="number"
                   value={editProduct.price}
                   onChange={(e) => setEditProduct({ ...editProduct, price: e.target.value })}
+                  min={0}
+                  required
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -298,6 +386,8 @@ function ManageProduct() {
                   type="number"
                   value={editProduct.stock}
                   onChange={(e) => setEditProduct({ ...editProduct, stock: e.target.value })}
+                  min={0}
+                  required
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -311,6 +401,39 @@ function ManageProduct() {
                   <option value="1">Còn hàng</option>
                   <option value="0">Hết hàng</option>
                 </Form.Select>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Mô tả</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  value={editProduct.description}
+                  onChange={e => setEditProduct({ ...editProduct, description: e.target.value })}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Danh mục</Form.Label>
+                <Form.Select
+                  value={editProduct.categories}
+                  onChange={e => setEditProduct({ ...editProduct, categories: e.target.value })}
+                  required
+                >
+                  <option value="">Chọn danh mục</option>
+                  {categories.map(cat => (
+                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Ảnh sản phẩm</Form.Label>
+                <Form.Control
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={e => setEditProduct({ ...editProduct, images: e.target.files })}
+                />
+                <Form.Text className="text-muted">
+                  Nếu chọn ảnh mới, ảnh cũ sẽ bị thay thế.
+                </Form.Text>
               </Form.Group>
             </Form>
           )}
