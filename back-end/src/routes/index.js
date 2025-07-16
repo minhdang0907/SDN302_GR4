@@ -10,6 +10,7 @@ const orderRoutes = require("./order.route");
 const cartRoutes = require("./cart.route");
 const discountRoutes = require("./discount.route");
 const paymentRoutes = require("./payment.route");
+const adminStatsController = require("../controller/adminStats.controller");
 
 
 
@@ -24,6 +25,7 @@ router.use("/carts", cartRoutes);
 router.use("/discounts", discountRoutes);
 
 router.use("/payment", paymentRoutes);
+router.get("/admin/stats", adminStatsController.getStats);
 module.exports = router;
 module.exports = router;
 
