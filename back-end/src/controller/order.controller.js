@@ -100,57 +100,23 @@ const createOrder = async (req, res) => {
   }
 };
 
-// Lấy danh sách đơn hàng của một user theo ID
-const getOrdersByUserId = async (req, res) => {
+const getOrdersByUser = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const { startDate, endDate, status, page = 1, limit = 10 } = req.query;
-    
-    let filter = { user_id: userId };
-    
-    // Lọc theo ngày
-    if (startDate || endDate) {
-      filter.created_at = {};
-      if (startDate) {
-        filter.created_at.$gte = new Date(startDate);
-      }
-      if (endDate) {
-        filter.created_at.$lte = new Date(endDate + 'T23:59:59.999Z');
-      }
-    }
-    
-    // Lọc theo trạng thái
-    if (status) {
-      filter.status = status;
-    }
-
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    const [orders, total] = await Promise.all([
-      Order.find(filter)
-        .populate("user_id", "full_name email phone") 
-        .populate("items.product_id", "name price images") 
-        .sort({ created_at: -1 })
-        .skip(skip)
-        .limit(parseInt(limit)),
-      Order.countDocuments(filter)
-    ]);
-
-    res.status(200).json({
-      orders,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / limit),
-      total
-    });
-  } catch (error) {
-    console.error("Lỗi khi lấy đơn hàng của user:", error);
+    const { user_id } = req.params;
+    const orders = await Order.find({ user_id })
+      .populate("items.product_id", "name price")
+      .sort({ created_at: -1 });
+    res.status(200).json(orders);
+  } catch (err) {
     res.status(500).json({ message: "Lỗi máy chủ." });
   }
 };
+
+
 
 module.exports = {
   getAllOrder,
   updateOrderStatus,
   createOrder,
-  getOrdersByUserId
+  getOrdersByUser
 };

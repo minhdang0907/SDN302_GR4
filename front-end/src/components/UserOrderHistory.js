@@ -43,10 +43,18 @@ const UserOrderHistory = () => {
     comment: ""
   });
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [loadingReviewCheck, setLoadingReviewCheck] = useState(false);
 
   const navigate = useNavigate();
-  const userId = localStorage.getItem("user_id");
+
+  // ✅ Cải thiện cách lấy userId
+  const getUserId = () => {
+    return localStorage.getItem("user_id") || 
+           localStorage.getItem("id") || 
+           JSON.parse(localStorage.getItem("user") || "{}")?.id ||
+           null;
+  };
+
+  const userId = getUserId();
 
   const statusOptions = [
     { value: "", label: "Tất cả trạng thái" },
@@ -59,8 +67,8 @@ const UserOrderHistory = () => {
 
   const statusColors = {
     pending: "warning",
-    processing: "info",
-    shipped: "primary", 
+    processing: "info", 
+    shipped: "primary",
     delivered: "success",
     cancelled: "danger"
   };
@@ -68,7 +76,7 @@ const UserOrderHistory = () => {
   const statusLabels = {
     pending: "Chờ xử lý",
     processing: "Đang xử lý",
-    shipped: "Đã gửi hàng", 
+    shipped: "Đã gửi hàng",
     delivered: "Đã giao",
     cancelled: "Đã hủy"
   };
@@ -82,7 +90,17 @@ const UserOrderHistory = () => {
   };
 
   useEffect(() => {
+    // Debug localStorage
+    console.log("🔍 Debug localStorage:");
+    console.log("user_id:", localStorage.getItem("user_id"));
+    console.log("id:", localStorage.getItem("id"));
+    console.log("user:", localStorage.getItem("user"));
+    console.log("token:", localStorage.getItem("token"));
+    console.log("Detected userId:", userId);
+
     if (!userId) {
+      console.log("❌ Không tìm thấy user_id, chuyển về login");
+      toast.error("Vui lòng đăng nhập để xem lịch sử đơn hàng");
       navigate("/login");
       return;
     }
@@ -90,8 +108,12 @@ const UserOrderHistory = () => {
   }, [userId, filters]);
 
   const fetchOrders = async () => {
+    if (!userId) return;
+
     try {
       setLoading(true);
+      setError("");
+      
       const params = new URLSearchParams();
       
       if (filters.startDate) params.append('startDate', filters.startDate);
@@ -100,53 +122,65 @@ const UserOrderHistory = () => {
       params.append('page', filters.page);
       params.append('limit', '10');
 
-      const res = await axios.get(`http://localhost:9999/api/orders/user/${userId}?${params}`);
+      // ✅ Thử nhiều endpoint khác nhau
+      let res;
+      try {
+        res = await axios.get(`http://localhost:9999/orders/user/${userId}?${params}`);
+      } catch (err) {
+        // Thử endpoint khác nếu endpoint đầu tiên không hoạt động
+        res = await axios.get(`http://localhost:9999/api/orders/user/${userId}?${params}`);
+      }
       
-      // Kiểm tra trạng thái đánh giá cho từng sản phẩm
+      // Kiểm tra trạng thái đánh giá cho từng sản phẩm đã giao
       const ordersWithReviewStatus = await Promise.all(
-        res.data.orders.map(async (order) => {
-          const itemsWithReviewStatus = await Promise.all(
-            order.items.map(async (item) => {
-              try {
-                if (order.status === 'delivered' && item.product_id?._id) {
+        (res.data.orders || res.data || []).map(async (order) => {
+          if (order.status === 'delivered') {
+            const itemsWithReviewStatus = await Promise.all(
+              (order.items || []).map(async (item) => {
+                try {
                   const reviewCheck = await axios.get(
-                    `http://localhost:9999/api/reviews/check/${userId}/${item.product_id._id}`
+                    `http://localhost:9999/reviews/check/${userId}/${item.product_id?._id || item.product_id}`
                   );
                   return {
                     ...item,
                     hasReviewed: reviewCheck.data.hasReviewed || false
                   };
+                } catch (err) {
+                  return {
+                    ...item,
+                    hasReviewed: false
+                  };
                 }
-                return {
-                  ...item,
-                  hasReviewed: false
-                };
-              } catch (err) {
-                console.error("Error checking review status:", err);
-                return {
-                  ...item,
-                  hasReviewed: false
-                };
-              }
-            })
-          );
+              })
+            );
+            
+            return {
+              ...order,
+              items: itemsWithReviewStatus
+            };
+          }
           
-          return {
-            ...order,
-            items: itemsWithReviewStatus
-          };
+          return order;
         })
       );
 
       setOrders(ordersWithReviewStatus);
       setPagination({
-        total: res.data.total,
-        totalPages: res.data.totalPages,
-        currentPage: res.data.page
+        total: res.data.total || ordersWithReviewStatus.length,
+        totalPages: res.data.totalPages || Math.ceil(ordersWithReviewStatus.length / 10),
+        currentPage: res.data.page || filters.page
       });
     } catch (err) {
       console.error("Fetch orders error:", err);
-      setError("Không thể tải lịch sử đơn hàng.");
+      const errorMessage = err.response?.data?.message || "Không thể tải lịch sử đơn hàng.";
+      setError(errorMessage);
+      
+      // Nếu lỗi 401 (Unauthorized), chuyển về login
+      if (err.response?.status === 401) {
+        toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        localStorage.clear();
+        navigate("/login");
+      }
     } finally {
       setLoading(false);
     }
@@ -165,12 +199,10 @@ const UserOrderHistory = () => {
   };
 
   const openReviewModal = (product, orderId) => {
-    console.log("Opening review modal for:", product);
-    
     setReviewData({
-      product_id: product.product_id._id,
-      product_name: product.product_id.name,
-      product_image: product.product_id.images?.[0] || "",
+      product_id: product.product_id?._id || product.product_id,
+      product_name: product.product_id?.name || "Sản phẩm",
+      product_image: product.product_id?.images?.[0] || "",
       order_id: orderId,
       rating: 5,
       comment: ""
@@ -179,7 +211,6 @@ const UserOrderHistory = () => {
   };
 
   const submitReview = async () => {
-    // Validate form
     if (!reviewData.comment.trim()) {
       toast.error("Vui lòng nhập nhận xét về sản phẩm!");
       return;
@@ -200,11 +231,7 @@ const UserOrderHistory = () => {
         comment: reviewData.comment.trim()
       };
 
-      console.log("Submitting review:", reviewPayload);
-
-      const response = await axios.post("http://localhost:9999/api/reviews", reviewPayload);
-      
-      console.log("Review response:", response.data);
+      await axios.post("http://localhost:9999/reviews", reviewPayload);
       
       setShowReviewModal(false);
       toast.success("Đánh giá sản phẩm thành công! Cảm ơn bạn đã chia sẻ.");
@@ -286,24 +313,57 @@ const UserOrderHistory = () => {
     );
   };
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   if (loading) {
     return (
-      <div className="text-center py-5">
-        <Spinner animation="border" variant="primary" />
-        <p className="mt-2">Đang tải lịch sử đơn hàng...</p>
-      </div>
+      <Container className="py-5">
+        <div className="text-center py-5">
+          <Spinner animation="border" variant="primary" size="lg" />
+          <h4 className="mt-3">Đang tải lịch sử đơn hàng...</h4>
+          <p className="text-muted">Vui lòng chờ trong giây lát</p>
+        </div>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <Alert variant="danger" className="m-4">
-        <Alert.Heading>Có lỗi xảy ra!</Alert.Heading>
-        <p>{error}</p>
-        <Button variant="outline-danger" onClick={() => window.location.reload()}>
-          Thử lại
-        </Button>
-      </Alert>
+      <Container className="py-5">
+        <Alert variant="danger" className="text-center">
+          <Alert.Heading>
+            <i className="fas fa-exclamation-triangle me-2"></i>
+            Có lỗi xảy ra!
+          </Alert.Heading>
+          <p>{error}</p>
+          <hr />
+          <div className="d-flex gap-2 justify-content-center">
+            <Button variant="outline-danger" onClick={() => window.location.reload()}>
+              <i className="fas fa-redo me-1"></i>
+              Thử lại
+            </Button>
+            <Button variant="outline-primary" onClick={() => navigate("/")}>
+              <i className="fas fa-home me-1"></i>
+              Về trang chủ
+            </Button>
+          </div>
+        </Alert>
+      </Container>
     );
   }
 
@@ -408,16 +468,10 @@ const UserOrderHistory = () => {
                     <div className="d-flex align-items-center">
                       <i className="fas fa-receipt me-2 fs-5"></i>
                       <div>
-                        <strong className="fs-6">Đơn hàng #{order._id.slice(-8).toUpperCase()}</strong>
+                        <strong className="fs-6">Đơn hàng #{order._id?.slice(-8).toUpperCase()}</strong>
                         <div className="small opacity-75">
                           <i className="fas fa-clock me-1"></i>
-                          {new Date(order.created_at).toLocaleDateString("vi-VN", {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                          {formatDate(order.created_at)}
                         </div>
                       </div>
                     </div>
@@ -450,18 +504,21 @@ const UserOrderHistory = () => {
                 </div>
 
                 {/* Order Items */}
-                {order.items.map((item, idx) => (
+                {(order.items || []).map((item, idx) => (
                   <div key={idx} className="p-4 border-bottom">
                     <Row className="align-items-center">
                       <Col xs={2}>
                         <div className="position-relative">
                           <Image
                             src={item.product_id?.images?.[0] || "https://via.placeholder.com/100"}
-                            alt={item.product_id?.name}
+                            alt={item.product_id?.name || "Sản phẩm"}
                             width={100}
                             height={100}
                             className="rounded shadow-sm"
                             style={{ objectFit: 'cover' }}
+                            onError={(e) => {
+                              e.target.src = "https://via.placeholder.com/100";
+                            }}
                           />
                           <Badge 
                             bg="primary" 
@@ -478,7 +535,7 @@ const UserOrderHistory = () => {
                         </h6>
                         <div className="text-muted small mb-1">
                           <i className="fas fa-tag me-1"></i>
-                          Đơn giá: <span className="fw-bold">{item.price.toLocaleString("vi-VN")}₫</span>
+                          Đơn giá: <span className="fw-bold">{formatCurrency(item.price)}</span>
                         </div>
                         <div className="text-muted small">
                           <i className="fas fa-cube me-1"></i>
@@ -487,7 +544,7 @@ const UserOrderHistory = () => {
                       </Col>
                       <Col xs={2} className="text-center">
                         <div className="text-danger fw-bold fs-5">
-                          {(item.price * item.quantity).toLocaleString("vi-VN")}₫
+                          {formatCurrency(item.price * item.quantity)}
                         </div>
                         <small className="text-muted">Thành tiền</small>
                       </Col>
@@ -511,14 +568,6 @@ const UserOrderHistory = () => {
                                   <i className="fas fa-check-circle me-1"></i>
                                   Đã đánh giá
                                 </Badge>
-                                <Button
-                                  variant="link"
-                                  size="sm"
-                                  className="text-decoration-none mt-1"
-                                  onClick={() => navigate('/my-reviews')}
-                                >
-                                  Xem đánh giá
-                                </Button>
                               </div>
                             )}
                           </>
@@ -541,7 +590,7 @@ const UserOrderHistory = () => {
                       <div className="small text-muted">
                         <i className="fas fa-map-marker-alt me-2"></i>
                         <strong>Địa chỉ giao hàng:</strong>
-                        <div className="mt-1">{order.shipping_address}</div>
+                        <div className="mt-1">{order.shipping_address || "Không có thông tin"}</div>
                       </div>
                     </Col>
                     <Col md={6} className="text-end">
@@ -549,7 +598,7 @@ const UserOrderHistory = () => {
                         <div className="me-4">
                           <small className="text-muted d-block">Tổng cộng</small>
                           <span className="fs-4 fw-bold text-danger">
-                            {order.total_amount.toLocaleString("vi-VN")}₫
+                            {formatCurrency(order.total_amount)}
                           </span>
                         </div>
                         <Button
@@ -647,6 +696,9 @@ const UserOrderHistory = () => {
                     height={100}
                     className="rounded shadow-sm mb-3"
                     style={{ objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/100";
+                    }}
                   />
                 )}
                 <h5 className="text-primary mb-0">{reviewData.product_name}</h5>
@@ -722,8 +774,7 @@ const UserOrderHistory = () => {
           >
             {submittingReview ? (
               <>
-                <Spinner size="sm" className="me-2" />
-                Đang gửi...
+                <Spinner size="sm" className="me-2" />                Đang gửi...
               </>
             ) : (
               <>
@@ -739,3 +790,5 @@ const UserOrderHistory = () => {
 };
 
 export default UserOrderHistory;
+
+                

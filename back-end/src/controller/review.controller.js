@@ -32,7 +32,7 @@ const getReviewByProductId = async (req, res) => {
   }
 };
 
-// ✨ THÊM FUNCTION TẠO ĐÁNH GIÁ
+// THÊM FUNCTION TẠO ĐÁNH GIÁ
 const createReview = async (req, res) => {
   try {
     const { user_id, product_id, rating, comment } = req.body;
@@ -78,7 +78,7 @@ const createReview = async (req, res) => {
   }
 };
 
-// ✨ THÊM FUNCTION KIỂM TRA ĐÁNH GIÁ
+// THÊM FUNCTION KIỂM TRA ĐÁNH GIÁ
 const checkUserReview = async (req, res) => {
   try {
     const { userId, productId } = req.params;
@@ -98,8 +98,30 @@ const checkUserReview = async (req, res) => {
   }
 };
 
+const checkExistingReview = async (req, res) => {
+  try {
+    const { userId, productId, orderId } = req.params;
+    
+    const existingReview = await Review.findOne({
+      user_id: userId,
+      product_id: productId,
+      order_id: orderId
+    });
+    
+    res.status(200).json({
+      hasReviewed: !!existingReview,
+      review: existingReview
+    });
+    
+  } catch (error) {
+    console.error("Lỗi kiểm tra review:", error);
+    res.status(500).json({ hasReviewed: false });
+  }
+};
+
 module.exports = {
   getReviewByProductId,
   createReview,
-  checkUserReview
+  checkUserReview,
+  checkExistingReview
 };
