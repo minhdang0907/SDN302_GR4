@@ -12,8 +12,10 @@ import { AuthProvider } from './context/AuthContext';
 // Layouts và Protected Route
 import UserLayout from "./components/UserLayout";
 import AdminLayout from "./components/Admin/AdminLayout";
-import ProtectedRoute from "./utils/ProtectedRoute"; 
 
+
+
+import ProtectedRoute from "./utils/ProtectedRoute"; // ✨ IMPORT "NGƯỜI GÁC CỔNG"
 // Pages & Components
 import EditProfilePage from './components/EditProfilePage';
 import ProductList from "./components/ProductList";
@@ -138,6 +140,9 @@ function App() {
             />
             </Route>
             
+
+          
+
           {/* === LUỒNG ADMIN === */}
           <Route
             element={
@@ -153,8 +158,8 @@ function App() {
             <Route path="/admin/categories" element={<ManageCategory />} />
             <Route path="/admin/users" element={<ManageUser />} />
             <Route path="/admin/reviews" element={<ManageReview />} />
-            <Route path="/admin/products" element={<ManageProduct />} />
-          </Route>
+            <Route path="/admin/products" element={<ManageProduct />} />          
+            </Route>
         </Routes>
         <ToastContainer /> {/* Component để hiển thị thông báo toast */}
       </AuthProvider>
