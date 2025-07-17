@@ -13,7 +13,6 @@ import { AuthProvider } from './context/AuthContext';
 import UserLayout from "./components/UserLayout";
 import AdminLayout from "./components/Admin/AdminLayout";
 import ProtectedRoute from "./utils/ProtectedRoute"; // ✨ IMPORT "NGƯỜI GÁC CỔNG"
-
 // Pages & Components
 import EditProfilePage from './components/EditProfilePage';
 import ProductList from "./components/ProductList";
@@ -32,6 +31,7 @@ import Checkout from "./components/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import CheckoutFail from "./pages/CheckoutFail";
 import Profile from './components/Profile';
+import UserOrderHistory from './components/UserOrderHistory';
 function App() {
   return (
     <BrowserRouter>
@@ -80,6 +80,14 @@ function App() {
             />
             <Route path="/checkout/success" element={<CheckoutSuccess />} />
             <Route path="/checkout/fail" element={<CheckoutFail />} />
+            <Route
+              path="/order-history"
+              element={
+                <ProtectedRoute allowedRoles={['customer']}>
+                  <UserOrderHistory />
+                </ProtectedRoute>
+              }
+            />
           </Route>
           {/* === LUỒNG ADMIN === */}
           <Route
@@ -96,8 +104,8 @@ function App() {
             <Route path="/admin/categories" element={<ManageCategory />} />
             <Route path="/admin/users" element={<ManageUser />} />
             <Route path="/admin/reviews" element={<ManageReview />} />
-            <Route path="/admin/products" element={<ManageProduct />} />
-          </Route>
+            <Route path="/admin/products" element={<ManageProduct />} />          
+            </Route>
         </Routes>
         <ToastContainer />
       </AuthProvider>
