@@ -34,19 +34,19 @@ const EditProfilePage = () => {
         fetchProfile();
     }, []);
 
-    // 2. Cập nhật state khi người dùng gõ vào input
+    
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // 3. Gửi dữ liệu lên server khi submit form
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const res = await axios.put('/api/users/profile', formData);
             toast.success(res.data.message);
 
-            // Cập nhật lại thông tin user trong AuthContext và localStorage
+           
             const token = localStorage.getItem('token');
             login(res.data.user, token);
 

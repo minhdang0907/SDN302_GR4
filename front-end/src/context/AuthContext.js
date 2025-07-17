@@ -25,6 +25,12 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // ✨ THÊM CÁC BIẾN TRẠNG THÁI MỚI DỰA TRÊN 'user' ✨
+    // isAuthenticated sẽ là true nếu 'user' không phải là null
+    const isAuthenticated = user !== null;
+    // userRole sẽ là giá trị của user.role, hoặc null nếu user là null
+    const userRole = user ? user.role : null;
+
     const login = useCallback((userData, token) => {
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(userData));
@@ -46,7 +52,8 @@ export const AuthProvider = ({ children }) => {
                     setUser(JSON.parse(userData));
                 }
             } catch (error) {
-                logout(); // Dọn dẹp nếu có lỗi
+                console.error("Failed to parse user data from localStorage:", error);
+                logout(); 
             } finally {
                 setLoading(false);
             }
@@ -55,8 +62,8 @@ export const AuthProvider = ({ children }) => {
     }, [logout]);
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
-            {!loading && children}
+        <AuthContext.Provider value={{ user, isAuthenticated, userRole, loading, login, logout }}>
+            {!loading && children} {/* Chỉ render children khi không còn loading */}
         </AuthContext.Provider>
     );
 };
