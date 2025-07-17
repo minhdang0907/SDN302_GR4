@@ -115,10 +115,39 @@ const checkExistingReview = async (req, res) => {
     res.status(500).json({ hasReviewed: false });
   }
 };
+const getAllReviews = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
+    const reviews = await Review.find({})
+      .populate("user_id", "full_name email")
+      .populate("product_id", "name price image")
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalReviews = await Review.countDocuments({});
+    const totalPages = Math.ceil(totalReviews / limit);
+
+    res.status(200).json({
+      reviews,
+      currentPage: page,
+      totalPages,
+      totalReviews,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy tất cả đánh giá:", error);
+    res.status(500).json({ message: "Lỗi máy chủ." });
+  }
+};
 module.exports = {
   getReviewByProductId,
   createReview,
   checkUserReview,
-  checkExistingReview
+  checkExistingReview,
+  getAllReviews
 };

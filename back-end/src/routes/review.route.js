@@ -12,4 +12,6 @@ router.post("/", reviewController.createReview);
 router.get("/check/:userId/:productId", reviewController.checkUserReview);
 // Kiểm tra review đã tồn tại
 router.get("/check/:userId/:productId/:orderId", reviewController.checkExistingReview);
+// Lấy tất cả review 
+router.get("/all", reviewController.getAllReviews);
 module.exports = router;
