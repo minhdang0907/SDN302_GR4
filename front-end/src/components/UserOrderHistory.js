@@ -471,7 +471,7 @@ const UserOrderHistory = () => {
                         src={
                           item.product_id?.images && Array.isArray(item.product_id.images)
                             ? item.product_id.images[0]
-                            : (item.product_id?.images || "https://via.placeholder.com/100")
+                            : (item.product_id?.images || " ")
                         }
                         alt={item.product_id?.name || "Sản phẩm"}
                         width={80}
@@ -479,7 +479,7 @@ const UserOrderHistory = () => {
                         className="rounded shadow-sm"
                         style={{ objectFit: 'cover' }}
                         onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/100";
+                          e.target.src = " ";
                         }}
                       />
                       <Badge
@@ -562,7 +562,7 @@ const UserOrderHistory = () => {
                     className="rounded shadow-sm mb-2"
                     style={{ objectFit: 'cover' }}
                     onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/100";
+                      e.target.src = " ";
                     }}
                   />
                 )}
