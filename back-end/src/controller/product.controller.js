@@ -50,6 +50,7 @@ exports.getProductById = async (req, res) => {
 // [POST] /products - Tạo sản phẩm mới
 exports.createProduct = async (req, res) => {
   try {
+    // Tạo mới
     const imageUrls = req.files ? req.files.map(f => f.path) : [];
     const newProduct = new Product({
       ...req.body,
@@ -66,6 +67,7 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     let updateData = { ...req.body };
+    // Nếu có file upload mới, thay thế ảnh cũ bằng ảnh mới
     if (req.files && req.files.length > 0) {
       updateData.images = req.files.map(f => f.path);
     }
