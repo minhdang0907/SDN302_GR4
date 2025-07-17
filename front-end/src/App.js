@@ -32,7 +32,7 @@ import Checkout from "./components/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import CheckoutFail from "./pages/CheckoutFail";
 import Profile from './components/Profile';
-
+import UserOrderHistory from './components/UserOrderHistory';
 function App() {
   return (
     <BrowserRouter>
@@ -88,6 +88,54 @@ function App() {
               </ProtectedRoute>
             }
           >
+             <Route
+            element={
+              <ProtectedRoute allowedRoles={['customer']}>
+                <UserLayout /> {/* UserLayout chỉ được render nếu người dùng là 'customer' */}
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<ProductList />} /> {/* Trang chủ (ProductList) giờ đây chỉ dành cho 'customer' */}
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/edit" element={<EditProfilePage />} /> {/* Đã di chuyển vào đây */}
+            <Route path="/checkout" element={<Checkout />} 
+            />
+            </Route>
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute allowedRoles={['customer']}>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/edit"
+              element={
+                <ProtectedRoute>
+                  <EditProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute allowedRoles={['customer']}>
+                  <Checkout />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
+            <Route path="/checkout/fail" element={<CheckoutFail />} />
+            <Route
+              path="/order-history"
+              element={
+                <ProtectedRoute allowedRoles={['customer']}>
+                  <UserOrderHistory />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/orders" element={<ManageOrder />} />
             <Route path="/admin/discounts" element={<ManageDiscount />} />
