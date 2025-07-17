@@ -13,7 +13,7 @@ import { AuthProvider } from './context/AuthContext';
 import UserLayout from "./components/UserLayout";
 import AdminLayout from "./components/Admin/AdminLayout";
 import ProtectedRoute from "./utils/ProtectedRoute"; 
-
+import ProtectedRoute from "./utils/ProtectedRoute";
 // Pages & Components
 import EditProfilePage from './components/EditProfilePage';
 import ProductList from "./components/ProductList";
@@ -136,6 +136,16 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            </Route>
+          {/* === LUỒNG ADMIN === */}
+          <Route
+            element={
+              // ✨ Bọc toàn bộ layout admin bằng ProtectedRoute
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/orders" element={<ManageOrder />} />
             <Route path="/admin/discounts" element={<ManageDiscount />} />
