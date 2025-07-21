@@ -21,7 +21,7 @@ function ManageProduct() {
     is_available: true,
     description: "",
     categories: "",
-    images: "",
+    images: [], // Sửa: Luôn dùng array cho images
   });
   const [showAdd, setShowAdd] = useState(false);
 
@@ -104,7 +104,7 @@ function ManageProduct() {
     setEditProduct({
       ...product,
       categories: product.categories?._id || product.categories,
-      images: Array.isArray(product.images) ? product.images.join(", ") : (product.images || "")
+      images: Array.isArray(product.images) ? product.images : (product.images ? [product.images] : []) // Sửa: Giữ array URL cho ảnh cũ
     });
     setShowEdit(true);
     setError("");
@@ -118,6 +118,7 @@ function ManageProduct() {
       setError(errMsg);
       return;
     }
+
     try {
       const formData = new FormData();
       formData.append("name", editProduct.name);
@@ -126,20 +127,37 @@ function ManageProduct() {
       formData.append("is_available", editProduct.is_available);
       formData.append("description", editProduct.description);
       formData.append("categories", editProduct.categories);
-      // Nếu images là FileList (người dùng chọn file mới)
-      if (editProduct.images && editProduct.images.length && editProduct.images[0] instanceof File) {
-        for (let i = 0; i < editProduct.images.length; i++) {
-          formData.append("images", editProduct.images[i]);
+
+      // Sửa: Phân biệt existing_images (URL string) và images (cho new, để khớp multer chung)
+      let hasExisting = false;
+      editProduct.images.forEach((img) => {
+        if (typeof img === "string") {
+          formData.append("existing_images[]", img); // Gửi array URL cũ nếu có
+          hasExisting = true;
+        } else if (img instanceof File) {
+          formData.append("images", img); // Sửa: Dùng 'images' cho new files, dễ config multer
         }
-      }
-      await axios.put(`http://localhost:9999/products/${editProduct._id}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
       });
+      if (!hasExisting) {
+        formData.append("existing_images[]", ""); // Append empty nếu không có cũ, tránh undefined
+      }
+
+      // Debug: Log formData contents
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+
+      const response = await axios.put(`http://localhost:9999/products/${editProduct._id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      console.log("Update response:", response.data); // Debug thêm
+
       setShowEdit(false);
       setSuccess("Đã cập nhật sản phẩm!");
       fetchProducts();
     } catch (err) {
-      setError("Cập nhật thất bại");
+      console.error("Detailed error in handleSaveEdit:", err.response ? err.response.data : err.message); // Debug chi tiết hơn
+      setError(err.response ? err.response.data.message || "Cập nhật thất bại (kiểm tra backend log)" : "Lỗi kết nối");
     }
   };
 
@@ -150,6 +168,7 @@ function ManageProduct() {
       setError(errMsg);
       return;
     }
+
     try {
       const formData = new FormData();
       formData.append("name", addProduct.name);
@@ -158,23 +177,17 @@ function ManageProduct() {
       formData.append("is_available", addProduct.is_available);
       formData.append("description", addProduct.description);
       formData.append("categories", addProduct.categories);
-      for (let i = 0; i < addProduct.images.length; i++) {
-        formData.append("images", addProduct.images[i]);
+
+      if (addProduct.images) {
+        addProduct.images.forEach((file) => formData.append("images", file)); // Giữ 'images' cho add
       }
+
       await axios.post("http://localhost:9999/products", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
+        headers: { "Content-Type": "multipart/form-data" },
       });
+
       setShowAdd(false);
       setSuccess("Đã thêm sản phẩm mới!");
-      setAddProduct({
-        name: "",
-        price: "",
-        stock: "",
-        is_available: true,
-        description: "",
-        categories: "",
-        images: "",
-      });
       fetchProducts();
     } catch (err) {
       setError("Thêm sản phẩm thất bại");
@@ -239,13 +252,12 @@ function ManageProduct() {
               <td>
                 {Array.isArray(p.images) && p.images.length > 0 ? (
                   <div style={{ display: "flex", gap: 4 }}>
-                    {p.images.map((img, idx) => (
-                      <Image
+                    {p.images.slice(0, 3).map((img, idx) => (
+                      <img
                         key={idx}
                         src={img}
                         alt="Ảnh"
                         style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 4 }}
-                        thumbnail
                       />
                     ))}
                   </div>
@@ -365,14 +377,31 @@ function ManageProduct() {
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Ảnh sản phẩm</Form.Label>
+              <Form.Label>Ảnh sản phẩm (tối đa 3 ảnh)</Form.Label>
               <Form.Control
                 type="file"
                 multiple
                 accept="image/*"
-                onChange={e => setAddProduct({ ...addProduct, images: e.target.files })}
-                required
+                onChange={(e) => {
+                  const files = Array.from(e.target.files);
+                  if (files.length > 3) {
+                    alert("Chỉ được chọn tối đa 3 ảnh!");
+                    e.target.value = ""; // Reset input nếu vượt quá giới hạn
+                  } else {
+                    setAddProduct({ ...addProduct, images: files });
+                  }
+                }}
               />
+              <div className="mt-2">
+                {addProduct.images.length > 0 && addProduct.images.map((file, idx) => (
+                  <img
+                    key={idx}
+                    src={URL.createObjectURL(file)}
+                    alt="Preview"
+                    style={{ width: 60, height: 60, marginRight: 5, objectFit: "cover" }}
+                  />
+                ))}
+              </div>
             </Form.Group>
           </Form>
         </Modal.Body>
@@ -457,15 +486,45 @@ function ManageProduct() {
                 </Form.Select>
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Ảnh sản phẩm</Form.Label>
+                <Form.Label>Ảnh hiện tại (có thể xóa từng cái)</Form.Label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  {editProduct.images.map((img, idx) => (
+                    <div key={idx} style={{ position: 'relative' }}>
+                      <Image
+                        src={typeof img === 'string' ? img : URL.createObjectURL(img)}
+                        alt="Thumb"
+                        thumbnail
+                        style={{ width: 100, height: 100 }}
+                      />
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        style={{ position: 'absolute', top: 0, right: 0 }}
+                        onClick={() => {
+                          const newImages = [...editProduct.images];
+                          newImages.splice(idx, 1);
+                          setEditProduct({ ...editProduct, images: newImages });
+                        }}
+                      >
+                        X
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Thêm ảnh mới (sẽ thêm vào danh sách hiện tại)</Form.Label>
                 <Form.Control
                   type="file"
                   multiple
                   accept="image/*"
-                  onChange={e => setEditProduct({ ...editProduct, images: e.target.files })}
+                  onChange={e => {
+                    const newFiles = Array.from(e.target.files);
+                    setEditProduct({ ...editProduct, images: [...editProduct.images, ...newFiles] }); // Sửa: Merge với cũ
+                  }}
                 />
                 <Form.Text className="text-muted">
-                  Nếu chọn ảnh mới, ảnh cũ sẽ bị thay thế.
+                  Ảnh mới sẽ được thêm vào, không thay thế ảnh cũ trừ khi bạn xóa chúng. Nếu không chọn, ảnh giữ nguyên.
                 </Form.Text>
               </Form.Group>
             </Form>

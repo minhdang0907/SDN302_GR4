@@ -1,6 +1,6 @@
 const Product = require("../models/product.js");
 
-// [GET] /products - Lấy danh    sản phẩm
+// [GET] /products - Lấy danh sách sản phẩm
 exports.getAllProducts = async (req, res) => {
   try {
     const { category, search, page = 1, limit = 10 } = req.query;
@@ -50,15 +50,15 @@ exports.getProductById = async (req, res) => {
 // [POST] /products - Tạo sản phẩm mới
 exports.createProduct = async (req, res) => {
   try {
-    // Tạo mới
-    const imageUrls = req.files ? req.files.map(f => f.path) : [];
+    const imageUrls = req.files ? req.files.map(f => f.path) : []; // Lấy đường dẫn ảnh từ req.files
     const newProduct = new Product({
       ...req.body,
-      images: imageUrls,
+      images: imageUrls, // Lưu danh sách ảnh vào mảng images
     });
     const saved = await newProduct.save();
     res.status(201).json(saved);
   } catch (err) {
+    console.error("Error in createProduct:", err.message); // Debug thêm
     res.status(400).json({ message: err.message });
   }
 };
@@ -67,14 +67,18 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     let updateData = { ...req.body };
-    // Nếu có file upload mới, thay thế ảnh cũ bằng ảnh mới
-    if (req.files && req.files.length > 0) {
-      updateData.images = req.files.map(f => f.path);
-    }
+
+    // Sửa: Merge existing_images và images (new)
+    let existingImages = req.body.existing_images ? (Array.isArray(req.body.existing_images) ? req.body.existing_images : [req.body.existing_images]) : [];
+    existingImages = existingImages.filter(img => img !== ""); // Lọc empty nếu không có cũ
+    const newImages = req.files ? req.files.map(f => f.path) : [];
+    updateData.images = [...existingImages, ...newImages]; // Kết hợp cũ và mới
+
     const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) return res.status(404).json({ message: "Product not found" });
     res.status(200).json(updated);
   } catch (err) {
+    console.error("Detailed error in updateProduct:", err.message, err.stack); // Debug chi tiết để xem lỗi 500
     res.status(400).json({ message: err.message });
   }
 };
@@ -102,3 +106,19 @@ exports.restoreProduct = async (req, res) => {
   }
 };
 
+// [PATCH] /products/:id/remove-image - Xóa ảnh riêng (thêm mới để hỗ trợ xóa)
+exports.removeImage = async (req, res) => {
+  try {
+    const { imageUrl } = req.body; // Nhận URL ảnh cần xóa từ body
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    product.images = product.images.filter(img => img !== imageUrl);
+    await product.save();
+    // Optional: Xóa file vật lý nếu cần, ví dụ fs.unlink(imageUrl.replace('uploads/', 'public/uploads/'));
+
+    res.status(200).json({ message: "Image removed successfully", product });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
