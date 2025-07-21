@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 require("./category.js");
+const mongooseDelete = require('mongoose-delete');
 const ProductSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String },
@@ -12,6 +13,8 @@ const ProductSchema = new Schema({
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
 });
+
+ProductSchema.plugin(mongooseDelete, { overrideMethods: 'all', deletedAt: true });
 
 const Product = mongoose.model("Product", ProductSchema);
 module.exports = Product;

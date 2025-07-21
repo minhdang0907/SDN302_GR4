@@ -146,7 +146,7 @@ exports.login = async (req, res) => {
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ message: "Email không tồn tại" });
 
-    
+
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: "Mật khẩu không đúng" });
@@ -159,7 +159,7 @@ exports.login = async (req, res) => {
 
         res.cookie("token", token, { httpOnly: true, maxAge: 2 * 60 * 60 * 1000 });
 
-        res.status(200).json({ message: "Đăng nhập thành công", token, user_id: user._id, role: user.role ,  full_name: user.full_name, phone: user.phone , email: user.email });
+        res.status(200).json({ message: "Đăng nhập thành công", token, user_id: user._id, role: user.role, full_name: user.full_name, phone: user.phone, email: user.email });
     } catch (err) {
         res.status(500).json({ message: "Lỗi server", error: err.message });
     }
