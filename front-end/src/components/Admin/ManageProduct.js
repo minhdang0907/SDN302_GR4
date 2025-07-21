@@ -65,14 +65,37 @@ function ManageProduct() {
   };
 
   // Xóa sản phẩm
-  const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
+  const handleDelete = async (product) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xoá?")) return;
+
     try {
-      await axios.delete(`http://localhost:9999/products/${id}`);
-      setSuccess("Đã xóa sản phẩm!");
+      const url = product.deleted
+        ? `http://localhost:9999/products/${product._id}/restore`
+        : `http://localhost:9999/products/${product._id}`;
+      console.log("Calling API:", url); // Debug log
+      await axios.delete(url);
+
+      setProducts(
+        products.map((p) =>
+          p._id === product._id ? { ...p, deleted: !p.deleted } : p
+        )
+      );
+      setSuccess(product.deleted ? "Khôi phục thành công" : "Xoá thành công");
+    } catch (err) {
+      console.error("Error in handleDelete:", err.message); // Debug log
+      setError("Xoá thất bại");
+    }
+  };
+
+  // Khôi phục sản phẩm
+  const handleRestore = async (id) => {
+    if (!window.confirm("Bạn có chắc muốn khôi phục sản phẩm này?")) return;
+    try {
+      await axios.patch(`http://localhost:9999/products/${id}/restore`);
+      setSuccess("Đã khôi phục sản phẩm!");
       fetchProducts();
     } catch (err) {
-      setError("Xóa thất bại");
+      setError("Khôi phục thất bại");
     }
   };
 
@@ -234,9 +257,19 @@ function ManageProduct() {
                 <Button variant="warning" size="sm" onClick={() => handleEdit(p)}>
                   Sửa
                 </Button>{" "}
-                <Button variant="danger" size="sm" onClick={() => handleDelete(p._id)}>
-                  Xóa
-                </Button>
+                {!p.deleted ? (
+                  <Button variant="danger" size="sm" onClick={() => handleDelete(p)}>
+                    Xóa
+                  </Button>
+                ) : (
+                  <Button
+                    variant="success"
+                    size="sm"
+                    onClick={() => handleRestore(p._id)} // Gọi hàm handleRestore
+                  >
+                    Khôi phục
+                  </Button>
+                )}
               </td>
             </tr>
           ))}

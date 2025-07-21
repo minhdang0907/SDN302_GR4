@@ -14,7 +14,7 @@ const ProductSchema = new Schema({
   updated_at: { type: Date, default: Date.now }
 });
 
-ProductSchema.plugin(mongooseDelete, { overrideMethods: 'all', deletedAt: true });
+ProductSchema.plugin(mongooseDelete, { overrideMethods: 'all', deletedAt: true, deleted: true });
 
 const Product = mongoose.model("Product", ProductSchema);
 module.exports = Product;

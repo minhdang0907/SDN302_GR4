@@ -16,6 +16,7 @@ router.post("/", upload.array("images", 5), productController.createProduct);
 router.put("/:id", upload.array("images", 5), productController.updateProduct);
 
 // DELETE sản phẩm
-router.delete("/:id", productController.deleteProduct);
+router.delete("/:id", productController.deleteProduct); // Xóa mềm
+router.patch("/:id/restore", productController.restoreProduct); // Khôi phục
 
 module.exports = router;
