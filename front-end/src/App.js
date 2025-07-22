@@ -90,19 +90,19 @@ function App() {
               </ProtectedRoute>
             }
           >
-             <Route
-            element={
-              <ProtectedRoute allowedRoles={['customer']}>
-                <UserLayout /> {/* UserLayout chỉ được render nếu người dùng là 'customer' */}
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/" element={<ProductList />} /> {/* Trang chủ (ProductList) giờ đây chỉ dành cho 'customer' */}
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/edit" element={<EditProfilePage />} /> {/* Đã di chuyển vào đây */}
-            <Route path="/checkout" element={<Checkout />} 
-            />
+            <Route
+              element={
+                <ProtectedRoute allowedRoles={['customer']}>
+                  <UserLayout /> {/* UserLayout chỉ được render nếu người dùng là 'customer' */}
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/" element={<ProductList />} /> {/* Trang chủ (ProductList) giờ đây chỉ dành cho 'customer' */}
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/edit" element={<EditProfilePage />} /> {/* Đã di chuyển vào đây */}
+              <Route path="/checkout" element={<Checkout />}
+              />
             </Route>
             <Route
               path="/profile"
@@ -138,10 +138,10 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            </Route>
-            
+          </Route>
 
-          
+
+
 
           {/* === LUỒNG ADMIN === */}
           <Route
@@ -158,8 +158,8 @@ function App() {
             <Route path="/admin/categories" element={<ManageCategory />} />
             <Route path="/admin/users" element={<ManageUser />} />
             <Route path="/admin/reviews" element={<ManageReview />} />
-            <Route path="/admin/products" element={<ManageProduct />} />          
-            </Route>
+            <Route path="/admin/products" element={<ManageProduct />} />
+          </Route>
         </Routes>
         <ToastContainer /> {/* Component để hiển thị thông báo toast */}
       </AuthProvider>
