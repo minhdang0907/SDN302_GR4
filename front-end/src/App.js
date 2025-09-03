@@ -9,9 +9,12 @@ import { ToastContainer } from "react-toastify";
 // Context
 import { AuthProvider } from './context/AuthContext';
 
-// Layouts and Protected Route
+// Layouts và Protected Route
 import UserLayout from "./components/UserLayout";
 import AdminLayout from "./components/Admin/AdminLayout";
+
+
+
 import ProtectedRoute from "./utils/ProtectedRoute"; // ✨ IMPORT "NGƯỜI GÁC CỔNG"
 // Pages & Components
 import EditProfilePage from './components/EditProfilePage';
@@ -35,25 +38,72 @@ import UserOrderHistory from './components/UserOrderHistory';
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider> {/* AuthProvider bao bọc tất cả */}
+      <AuthProvider> {/* AuthProvider bao bọc toàn bộ ứng dụng để cung cấp ngữ cảnh xác thực */}
         <Routes>
-          {/* === LUỒNG PUBLIC & CUSTOMER === */}
+          {/* === LUỒNG PUBLIC (Công khai - Không yêu cầu vai trò cụ thể, hiển thị UserLayout) === */}
+          {/* Các trang này có thể truy cập bởi bất kỳ ai (khách, khách hàng, admin) */}
           <Route element={<UserLayout />}>
-            {/* Các trang công khai, ai cũng xem được */}
-            <Route path="/" element={<ProductList />} />
+            {/* Trang chi tiết sản phẩm, thanh toán thành công/thất bại */}
             <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
+            <Route path="/checkout/fail" element={<CheckoutFail />} />
+          </Route>
+
+          {/* === LUỒNG AUTHENTICATION (Chỉ khi chưa đăng nhập) === */}
+          {/* Các trang này chỉ có thể truy cập khi người dùng CHƯA đăng nhập. */}
+          <Route
+            element={
+              <ProtectedRoute requireLoggedOut={true}>
+                <UserLayout /> {/* Vẫn hiển thị UserLayout cho các trang này */}
+              </ProtectedRoute>
+            }
+          >
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            {/* Các trang cần đăng nhập với vai trò 'customer' */}
+          </Route>
+
+          {/* === LUỒNG CUSTOMER (Dành riêng cho khách hàng - Bao gồm trang chủ và chỉnh sửa hồ sơ) === */}
+          {/* Các trang này yêu cầu người dùng phải có vai trò 'customer' để truy cập. */}
+          {/* UserLayout được đặt bên trong ProtectedRoute để đảm bảo rằng */}
+          {/* Header của UserLayout không hiển thị cho vai trò admin khi họ cố gắng truy cập các trang này. */}
+          <Route
+            element={
+              <ProtectedRoute allowedRoles={['customer']}>
+                <UserLayout /> {/* UserLayout chỉ được render nếu người dùng là 'customer' */}
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<ProductList />} /> {/* Trang chủ (ProductList) giờ đây chỉ dành cho 'customer' */}
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/edit" element={<EditProfilePage />} /> {/* Đã di chuyển vào đây */}
+            <Route path="/checkout" element={<Checkout />} />
+          </Route>
+
+          {/* === LUỒNG ADMIN (Dành riêng cho quản trị viên) === */}
+          {/* Toàn bộ layout và các trang quản trị được bọc bởi ProtectedRoute */}
+          {/* để đảm bảo chỉ người dùng có vai trò 'admin' mới có thể truy cập. */}
+          <Route
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminLayout /> {/* AdminLayout chỉ được render nếu người dùng là 'admin' */}
+              </ProtectedRoute>
+            }
+          >
             <Route
-              path="/cart"
               element={
                 <ProtectedRoute allowedRoles={['customer']}>
-                  <Cart />
+                  <UserLayout /> {/* UserLayout chỉ được render nếu người dùng là 'customer' */}
                 </ProtectedRoute>
               }
-
-            />
+            >
+              <Route path="/" element={<ProductList />} /> {/* Trang chủ (ProductList) giờ đây chỉ dành cho 'customer' */}
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/edit" element={<EditProfilePage />} /> {/* Đã di chuyển vào đây */}
+              <Route path="/checkout" element={<Checkout />}
+              />
+            </Route>
             <Route
               path="/profile"
               element={
@@ -89,6 +139,10 @@ function App() {
               }
             />
           </Route>
+
+
+
+
           {/* === LUỒNG ADMIN === */}
           <Route
             element={
@@ -104,10 +158,10 @@ function App() {
             <Route path="/admin/categories" element={<ManageCategory />} />
             <Route path="/admin/users" element={<ManageUser />} />
             <Route path="/admin/reviews" element={<ManageReview />} />
-            <Route path="/admin/products" element={<ManageProduct />} />          
-            </Route>
+            <Route path="/admin/products" element={<ManageProduct />} />
+          </Route>
         </Routes>
-        <ToastContainer />
+        <ToastContainer /> {/* Component để hiển thị thông báo toast */}
       </AuthProvider>
     </BrowserRouter>
   );

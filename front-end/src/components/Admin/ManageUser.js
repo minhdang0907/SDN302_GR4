@@ -53,14 +53,25 @@ function ManageUser() {
   };
 
   // Xóa user
-  const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc muốn xóa user này?")) return;
+  const handleDelete = async (user) => {
+    if (!window.confirm("Bạn có chắc chắn muốn thực hiện thao tác này?")) return;
+
     try {
-      await axios.delete(`http://localhost:9999/users/${id}`);
-      setSuccess("Đã xóa user!");
-      fetchUsers();
+      const url = user.deleted
+        ? `http://localhost:9999/users/${user._id}/restore` // Khôi phục
+        : `http://localhost:9999/users/${user._id}`; // Xóa mềm
+
+      const method = user.deleted ? "patch" : "delete"; // Phương thức HTTP
+      await axios[method](url);
+
+      setUsers(
+        users.map((u) =>
+          u._id === user._id ? { ...u, deleted: !u.deleted } : u
+        )
+      );
+      setSuccess(user.deleted ? "Khôi phục thành công" : "Xóa thành công");
     } catch (err) {
-      setError("Xóa thất bại");
+      setError("Thao tác thất bại");
     }
   };
 
@@ -116,9 +127,15 @@ function ManageUser() {
                 <Button variant="warning" size="sm" onClick={() => handleEdit(u)}>
                   Sửa
                 </Button>{" "}
-                <Button variant="danger" size="sm" onClick={() => handleDelete(u._id)}>
-                  Xóa
-                </Button>
+                {!u.deleted ? (
+                  <Button variant="danger" size="sm" onClick={() => handleDelete(u)}>
+                    Xóa
+                  </Button>
+                ) : (
+                  <Button variant="success" size="sm" onClick={() => handleDelete(u)}>
+                    Khôi phục
+                  </Button>
+                )}
               </td>
             </tr>
           ))}

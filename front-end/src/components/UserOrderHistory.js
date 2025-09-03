@@ -94,6 +94,8 @@ const UserOrderHistory = () => {
 
       const res = await axios.get("http://localhost:9999/orders");
 
+      console.log("Fetched orders:", res);
+
       const userOrders = (res.data || []).filter(order =>
         order.user_id === userId || order.user_id?._id === userId
       );
@@ -119,6 +121,9 @@ const UserOrderHistory = () => {
                 }
               })
             );
+
+
+            console.log("Items with review status:", itemsWithReviewStatus);
 
             return {
               ...order,
